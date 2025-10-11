@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeoAware - Disaster Monitoring</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Auth Screen Styles */
+        .auth-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 90vh;
+        }
+
+        .auth-box {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 450px;
+        }
+
+        .auth-logo {
+            text-align: center;
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .auth-title {
+            text-align: center;
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .auth-subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .role-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .role-btn {
+            padding: 15px 10px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .role-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .role-btn.selected {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+
+        .role-icon {
+            font-size: 24px;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .role-label {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .auth-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: #f0f0f0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .auth-tab.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .auth-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .auth-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+        }
+
+        .role-info {
+            background: #f0f7ff;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #333;
+        }
+
+        .verification-notice {
+            background: #fef3c7;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Header Styles */
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-badge {
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .badge-user {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge-responder {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-admin {
+            background: #fecaca;
+            color: #991b1b;
+        }
+
+        .logout-btn {
+            padding: 10px 20px;
+            border: none;
+            background: #ef4444;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #dc2626;
+        }
+
+        .nav {
+            display: flex;
+            gap: 15px;
+        }
+
+        .nav-btn {
+            padding: 10px 20px;
+            border: none;
+            background: #f0f0f0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .nav-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .nav-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .content {
+            display: none;
+        }
+
+        .content.active {
+            display: block;
+        }
+
+        /* Dashboard Styles */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .stat-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .weather-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            color: white;
+        }
+
+        .weather-temp {
+            font-size: 48px;
+            font-weight: bold;
+        }
+
+        .weather-details {
+            flex: 1;
+        }
+
+        .weather-condition {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        .weather-meta {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        /* Map Styles */
+        .map-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .map-placeholder {
+            width: 100%;
+            height: 500px;
+            background: linear-gradient(135deg, #e0e7ff 0%, #cffafe 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: #666;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .map-marker {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: #ef4444;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.2);
+                opacity: 0.7;
+            }
+        }
+
+        .risk-legend {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .legend-color {
+            width: 30px;
+            height: 30px;
+            border-radius: 5px;
+        }
+
+        .risk-low { background: #22c55e; }
+        .risk-moderate { background: #eab308; }
+        .risk-high { background: #f97316; }
+        .risk-critical { background: #ef4444; }
+
+        /* Alert Form Styles */
+        .alert-form {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .severity-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .severity-btn {
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .severity-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .severity-btn.selected {
+            border-color: currentColor;
+            color: white;
+        }
+
+        .severity-btn.low.selected { background: #22c55e; border-color: #22c55e; }
+        .severity-btn.moderate.selected { background: #eab308; border-color: #eab308; }
+        .severity-btn.high.selected { background: #f97316; border-color: #f97316; }
+        .severity-btn.critical.selected { background: #ef4444; border-color: #ef4444; }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+        }
+
+        .alert-notice {
+            background: #fef3c7;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #eab308;
+            margin-bottom: 20px;
+        }
+
+        /* Verification Panel (Responder) */
+        .verification-grid {
+            display: grid;
+            gap: 15px;
+        }
+
+        .alert-item {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #eab308;
+        }
+
+        .alert-item.critical {
+            border-left-color: #ef4444;
+        }
+
+        .alert-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+
+        .alert-type {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .alert-time {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .alert-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .verify-btn {
+            background: #22c55e;
+            color: white;
+        }
+
+        .reject-btn {
+            background: #ef4444;
+            color: white;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Broadcast Panel (Admin) */
+        .broadcast-form {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .nav {
+                flex-wrap: wrap;
+            }
+
+            .severity-buttons {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .role-selector {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Authentication Screen -->
+        <div id="authScreen" class="auth-container">
+            <div class="auth-box">
+                <div class="auth-logo">🌍</div>
+                <div class="auth-title">GeoAware</div>
+                <div class="auth-subtitle">Disaster Monitoring & Response System</div>
+
+                <!-- Login/Signup Tabs -->
+                <div class="auth-tabs">
+                    <button class="auth-tab active" onclick="switchAuthTab('login')">Login</button>
+                    <button class="auth-tab" onclick="switchAuthTab('signup')">Sign Up</button>
+                </div>
+
+                <!-- Role Selection -->
+                <div class="role-selector">
+                    <button class="role-btn selected" onclick="selectRole('user')" data-role="user">
+                        <span class="role-icon">👤</span>
+                        <span class="role-label">User</span>
+                    </button>
+                    <button class="role-btn" onclick="selectRole('responder')" data-role="responder">
+                        <span class="role-icon">🚨</span>
+                        <span class="role-label">Responder</span>
+                    </button>
+                    <button class="role-btn" onclick="selectRole('admin')" data-role="admin">
+                        <span class="role-icon">⚡</span>
+                        <span class="role-label">Admin</span>
+                    </button>
+                </div>
+
+                <!-- Role Information -->
+                <div id="roleInfo" class="role-info">
+                    <strong>User Role:</strong> Report disasters you witness and help keep your community safe.
+                </div>
+
+                <!-- Login Form -->
+                <form id="loginForm" onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-input" placeholder="your@email.com" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <input type="password" class="form-input" placeholder="••••••••" required>
+                    </div>
+
+                    <button type="submit" class="auth-btn">Login</button>
+                </form>
+
+                <!-- Signup Form -->
+                <form id="signupForm" class="hidden" onsubmit="handleSignup(event)">
+                    <div class="form-group">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" class="form-input" placeholder="John Doe" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-input" placeholder="your@email.com" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Phone Number</label>
+                        <input type="tel" class="form-input" placeholder="+91 XXXXX XXXXX" required>
+                    </div>
+
+                    <div id="responderFields" class="hidden">
+                        <div class="form-group">
+                            <label class="form-label">Organization</label>
+                            <select class="form-select" required>
+                                <option value="">Select organization...</option>
+                                <option value="ndrf">NDRF</option>
+                                <option value="fire">Fire Department</option>
+                                <option value="police">Police</option>
+                                <option value="medical">Medical Services</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Employee ID</label>
+                            <input type="text" class="form-input" placeholder="EMP12345" required>
+                        </div>
+                    </div>
+
+                    <div id="adminFields" class="hidden">
+                        <div class="form-group">
+                            <label class="form-label">Admin Code</label>
+                            <input type="text" class="form-input" placeholder="Enter admin authorization code" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Department</label>
+                            <input type="text" class="form-input" placeholder="Disaster Management Authority" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <input type="password" class="form-input" placeholder="••••••••" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Confirm Password</label>
+                        <input type="password" class="form-input" placeholder="••••••••" required>
+                    </div>
+
+                    <button type="submit" class="auth-btn">Sign Up</button>
+
+                    <div id="verificationNotice" class="verification-notice hidden">
+                        ⏳ Responder and Admin accounts require verification. You'll be notified within 24-48 hours.
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Main Application (Hidden until logged in) -->
+        <div id="mainApp" class="hidden">
+            <div class="header">
+                <div class="logo">🌍 GeoAware</div>
+                <div class="user-info">
+                    <span id="userName" style="font-weight: 600;">John Doe</span>
+                    <span id="userBadge" class="user-badge badge-user">User</span>
+                    <button class="logout-btn" onclick="handleLogout()">Logout</button>
+                </div>
+            </div>
+
+            <div class="nav" style="background: rgba(255, 255, 255, 0.95); padding: 15px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);">
+                <button class="nav-btn active" onclick="showSection('dashboard')">Dashboard</button>
+                <button class="nav-btn" onclick="showSection('map')">Risk Map</button>
+                <button id="reportBtn" class="nav-btn" onclick="showSection('alert')">Report Alert</button>
+                <button id="verifyBtn" class="nav-btn hidden" onclick="showSection('verify')">Verify Reports</button>
+                <button id="broadcastBtn" class="nav-btn hidden" onclick="showSection('broadcast')">Send Alert</button>
+            </div>
+
+            <!-- Dashboard Section -->
+            <div id="dashboard" class="content active">
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <div class="card-title">User Statistics</div>
+                        <div class="stat-box">
+                            <span class="stat-label">Total Alerts Submitted</span>
+                            <span class="stat-value">47</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-label">Verified Reports</span>
+                            <span class="stat-value">42</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-label">Community Rank</span>
+                            <span class="stat-value">#128</span>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">Current Weather</div>
+                        <div class="weather-info">
+                            <div class="weather-temp">28°C</div>
+                            <div class="weather-details">
+                                <div class="weather-condition">Partly Cloudy</div>
+                                <div class="weather-meta">Humidity: 65% • Wind: 12 km/h</div>
+                                <div class="weather-meta">Pressure: 1013 hPa</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">Recent Activity</div>
+                        <div class="stat-box">
+                            <span class="stat-label">Active Alerts in Area</span>
+                            <span class="stat-value" style="color: #f97316;">3</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-label">Last Check-in</span>
+                            <span class="stat-value" style="font-size: 16px;">2 hours ago</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-label">Risk Level</span>
+                            <span class="stat-value" style="color: #eab308;">Moderate</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Map Section -->
+            <div id="map" class="content">
+                <div class="map-container">
+                    <div class="card-title">Landslide Risk Heatmap</div>
+                    <div class="map-placeholder">
+                        <span style="z-index: 1;">🗺️ Interactive Map Area (Integrate with Google Maps / Mapbox)</span>
+                        <div class="map-marker" style="top: 30%; left: 40%;"></div>
+                        <div class="map-marker" style="top: 60%; left: 70%; background: #eab308;"></div>
+                        <div class="map-marker" style="top: 45%; left: 25%; background: #22c55e;"></div>
+                    </div>
+                    <div class="risk-legend">
+                        <div class="legend-item">
+                            <div class="legend-color risk-low"></div>
+                            <span>Low Risk</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color risk-moderate"></div>
+                            <span>Moderate Risk</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color risk-high"></div>
+                            <span>High Risk</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color risk-critical"></div>
+                            <span>Critical Risk</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Report Alert Section (Users) -->
+            <div id="alert" class="content">
+                <div class="alert-form">
+                    <div class="card-title" style="font-size: 24px; margin-bottom: 10px;">Report Emergency Alert</div>
+                    <div class="alert-notice">
+                        <strong>⚠️ Emergency Services:</strong> For immediate life-threatening emergencies, call 911 or your local emergency number first.
+                    </div>
+
+                    <form onsubmit="submitAlert(event)">
+                        <div class="form-group">
+                            <label class="form-label">Disaster Type</label>
+                            <select class="form-select" required>
+                                <option value="">Select disaster type...</option>
+                                <option value="landslide">Landslide</option>
+                                <option value="flood">Flood</option>
+                                <option value="earthquake">Earthquake</option>
+                                <option value="fire">Wildfire</option>
+                                <option value="storm">Severe Storm</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Severity Level</label>
+                            <div class="severity-buttons">
+                                <button type="button" class="severity-btn low" onclick="selectSeverity(this)">Low</button>
+                                <button type="button" class="severity-btn moderate" onclick="selectSeverity(this)">Moderate</button>
+                                <button type="button" class="severity-btn high" onclick="selectSeverity(this)">High</button>
+                                <button type="button" class="severity-btn critical" onclick="selectSeverity(this)">Critical</button>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Location</label>
+                            <input type="text" class="form-input" placeholder="Address or landmark (auto-detected: Current Location)" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-textarea" placeholder="Describe what you're witnessing in detail..." required></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Contact Number (Optional)</label>
+                            <input type="tel" class="form-input" placeholder="+91 XXXXX XXXXX">
+                        </div>
+
+                        <button type="submit" class="submit-btn">🚨 Submit Alert</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Verify Reports Section (Responders) -->
+            <div id="verify" class="content">
+                <div class="card">
+                    <div class="card-title" style="font-size: 24px; margin-bottom: 20px;">Pending Reports for Verification</div>
+                    <div class="verification-grid">
+                        <div class="alert-item critical">
+                            <div class="alert-header">
+                                <div>
+                                    <div class="alert-type">🔥 Wildfire - Critical</div>
+                                    <div class="alert-time">Reported 15 minutes ago</div>
+                                </div>
+                            </div>
+                            <p><strong>Location:</strong> Shimla Hills, Sector 7</p>
+                            <p><strong>Description:</strong> Large fire spreading rapidly through forest area. Multiple trees engulfed. Heavy smoke visible.</p>
+                            <p><strong>Reporter:</strong> Raj Kumar (ID: USR2847)</p>
+                            <div class="alert-actions">
+                                <button class="action-btn verify-btn" onclick="verifyAlert(this, 'verify')">✓ Verify & Deploy</button>
+                                <button class="action-btn reject-btn" onclick="verifyAlert(this, 'reject')">✗ Reject</button>
+                            </div>
+                        </div>
+
+                        <div class="alert-item">
+                            <div class="alert-header">
+                                <div>
+                                    <div class="alert-type">🌊 Flood - High</div>
+                                    <div class="alert-time">Reported 45 minutes ago</div>
+                                </div>
+                            </div>
+                            <p><strong>Location:</strong> River Road, Near Bridge</p>
+                            <p><strong>Description:</strong> River water overflowing onto main road. Water level rising quickly after heavy rainfall.</p>
+                            <p><strong>Reporter:</strong> Priya Singh (ID: USR4521)</p>
+                            <div class="alert-actions">
+                                <button class="action-btn verify-btn" onclick="verifyAlert(this, 'verify')">✓ Verify & Deploy</button>
+                                <button class="action-btn reject-btn" onclick="verifyAlert(this, 'reject')">✗ Reject</button>
+                            </div>
+                        </div>
+
+                        <div class="alert-item">
+                            <div class="alert-header">
+                                <div>
+                                    <div class="alert-type">⛰️ Landslide - Moderate</div>
+                                    <div class="alert-time">Reported 2 hours ago</div>
+                                </div>
+                            </div>
+                            <p><strong>Location:</strong> Hill View Road, KM 15</p>
+                            <p><strong>Description:</strong> Small rocks and debris falling on road. Visible cracks on hillside.</p>
+                            <p><strong>Reporter:</strong> Amit Sharma (ID: USR7893)</p>
+                            <div class="alert-actions">
+                                <button class="action-btn verify-btn" onclick="verifyAlert(this, 'verify')">✓ Verify & Deploy</button>
+                                <button class="action-btn reject-btn" onclick="verifyAlert(this, 'reject')">✗ Reject</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Broadcast Alert Section (Admins) -->
+            <div id="broadcast" class="content">
+                <div class="broadcast-form">
+                    <div class="card-title" style="font-size: 24px; margin-bottom: 10px;">Broadcast Emergency Alert</div>
+                    <div class="alert-notice">
+                        <strong>⚡ Admin Broadcast:</strong> This alert will be sent to all users in the selected region. Use responsibly.
+                    </div>
+
+                    <form onsubmit="sendBroadcast(event)">
+                        <div class="form-group">
+                            <label class="form-label">Alert Type</label>
+                            <select class="form-select" required>
+                                <option value="">Select alert type...</option>
+                                <option value="landslide">Landslide Warning</option>
+                                <option value="flood">Flood Warning</option>
+                                <option value="earthquake">Earthquake Alert</option>
+                                <option value="fire">Fire Warning</option>
+                                <option value="storm">Storm Warning</option>
+                                <option value="evacuation">Evacuation Order</option>
+                                <option value="all-clear">All Clear</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Severity Level</label>
+                            <div class="severity-buttons">
+                                <button type="button" class="severity-btn low" onclick="selectSeverity(this)">Advisory</button>
+                                <button type="button" class="severity-btn moderate" onclick="selectSeverity(this)">Watch</button>
+                                <button type="button" class="severity-btn high" onclick="selectSeverity(this)">Warning</button>
+                                <button type="button" class="severity-btn critical" onclick="selectSeverity(this)">Emergency</button>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Affected Region</label>
+                            <input type="text" class="form-input" placeholder="e.g., Shimla District, Sector 1-5" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Alert Message</label>
+                            <textarea class="form-textarea" placeholder="Provide detailed information about the emergency and necessary actions..." required></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Recommended Actions</label>
+                            <textarea class="form-textarea" placeholder="List safety measures and evacuation instructions if applicable..." required></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Alert Duration (hours)</label>
+                            <input type="number" class="form-input" placeholder="24" min="1" required>
+                        </div>
+
+                        <button type="submit" class="submit-btn">📢 Send Broadcast Alert</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentRole = 'user';
+        let isLoggedIn = false;
+
+        // Role Selection
+        function selectRole(role) {
+            currentRole = role;
+            document.querySelectorAll('.role-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            event.target.closest('.role-btn').classList.add('selected');
+
+            // Update role info
+            const roleInfo = {
+                user: '<strong>User Role:</strong> Report disasters you witness and help keep your community safe.',
+                responder: '<strong>Responder Role:</strong> Verify reports and coordinate emergency response teams (NDRF, Fire, Police, Medical).',
+                admin: '<strong>Admin Role:</strong> Send official alerts and broadcasts to warn communities about disasters.'
+            };
+            document.getElementById('roleInfo').innerHTML = roleInfo[role];
+
+            // Show/hide additional fields for signup
+            if (document.getElementById('signupForm').classList.contains('hidden') === false) {
+                updateSignupFields(role);
+            }
+        }
+
+        // Auth Tab Switching
+        function switchAuthTab(tab) {
+            document.querySelectorAll('.auth-tab').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            if (tab === 'login') {
+                document.getElementById('loginForm').classList.remove('hidden');
+                document.getElementById('signupForm').classList.add('hidden');
+            } else {
+                document.getElementById('loginForm').classList.add('hidden');
+                document.getElementById('signupForm').classList.remove('hidden');
+                updateSignupFields(currentRole);
+            }
+        }
+
+        // Update Signup Fields Based on Role
+        function updateSignupFields(role) {
+            const responderFields = document.getElementById('responderFields');
+            const adminFields = document.getElementById('adminFields');
+            const verificationNotice = document.getElementById('verificationNotice');
+
+            responderFields.classList.add('hidden');
+            adminFields.classList.add('hidden');
+            verificationNotice.classList.add('hidden');
+
+            if (role === 'responder') {
+                responderFields.classList.remove('hidden');
+                verificationNotice.classList.remove('hidden');
+            } else if (role === 'admin') {
+                adminFields.classList.remove('hidden');
+                verificationNotice.classList.remove('hidden');
+            }
+        }
+
+        // Handle Login
+        function handleLogin(e) {
+            e.preventDefault();
+            isLoggedIn = true;
+            
+            // Hide auth screen, show main app
+            document.getElementById('authScreen').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+
+            // Update UI based on role
+            updateUIForRole(currentRole);
+            
+            alert(`Welcome! Logged in as ${currentRole}`);
+        }
+
+        // Handle Signup
+        function handleSignup(e) {
+            e.preventDefault();
+            
+            if (currentRole === 'user') {
+                // Users get instant access
+                isLoggedIn = true;
+                document.getElementById('authScreen').classList.add('hidden');
+                document.getElementById('mainApp').classList.remove('hidden');
+                updateUIForRole(currentRole);
+                alert('Account created successfully! Welcome to GeoAware.');
+            } else {
+                // Responders and Admins need verification
+                alert(`Signup successful! Your ${currentRole} account is pending verification. You'll receive an email within 24-48 hours once approved.`);
+                e.target.reset();
+            }
+        }
+
+        // Update UI Based on Role
+        function updateUIForRole(role) {
+            const userBadge = document.getElementById('userBadge');
+            const reportBtn = document.getElementById('reportBtn');
+            const verifyBtn = document.getElementById('verifyBtn');
+            const broadcastBtn = document.getElementById('broadcastBtn');
+
+            // Reset visibility
+            reportBtn.classList.remove('hidden');
+            verifyBtn.classList.add('hidden');
+            broadcastBtn.classList.add('hidden');
+
+            if (role === 'user') {
+                userBadge.textContent = 'User';
+                userBadge.className = 'user-badge badge-user';
+            } else if (role === 'responder') {
+                userBadge.textContent = 'Responder';
+                userBadge.className = 'user-badge badge-responder';
+                verifyBtn.classList.remove('hidden');
+            } else if (role === 'admin') {
+                userBadge.textContent = 'Admin';
+                userBadge.className = 'user-badge badge-admin';
+                broadcastBtn.classList.remove('hidden');
+            }
+        }
+
+        // Handle Logout
+        function handleLogout() {
+            isLoggedIn = false;
+            document.getElementById('authScreen').classList.remove('hidden');
+            document.getElementById('mainApp').classList.add('hidden');
+            
+            // Reset to login form
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('signupForm').classList.add('hidden');
+            document.querySelectorAll('.auth-tab')[0].classList.add('active');
+            document.querySelectorAll('.auth-tab')[1].classList.remove('active');
+            
+            alert('Logged out successfully');
+        }
+
+        // Show Section
+        function showSection(section) {
+            document.querySelectorAll('.content').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            document.getElementById(section).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Select Severity
+        function selectSeverity(btn) {
+            const parent = btn.parentElement;
+            parent.querySelectorAll('.severity-btn').forEach(b => {
+                b.classList.remove('selected');
+            });
+            btn.classList.add('selected');
+        }
+
+        // Submit Alert (Users)
+        function submitAlert(e) {
+            e.preventDefault();
+            alert('Alert submitted successfully! Response teams have been notified and will verify your report.');
+            e.target.reset();
+            document.querySelectorAll('.severity-btn').forEach(b => {
+                b.classList.remove('selected');
+            });
+        }
+
+        // Verify Alert (Responders)
+        function verifyAlert(btn, action) {
+            const alertItem = btn.closest('.alert-item');
+            if (action === 'verify') {
+                alert('Report verified! Emergency teams have been deployed to the location.');
+                alertItem.style.background = '#dcfce7';
+                alertItem.style.borderLeftColor = '#22c55e';
+            } else {
+                alert('Report marked as invalid and removed from queue.');
+                alertItem.style.background = '#fee2e2';
+                alertItem.style.borderLeftColor = '#ef4444';
+            }
+            setTimeout(() => {
+                alertItem.style.opacity = '0';
+                setTimeout(() => alertItem.remove(), 300);
+            }, 1000);
+        }
+
+        // Send Broadcast (Admins)
+        function sendBroadcast(e) {
+            e.preventDefault();
+            alert('Emergency broadcast sent successfully! All users in the affected region have been notified.');
+            e.target.reset();
+            document.querySelectorAll('.severity-btn').forEach(b => {
+                b.classList.remove('selected');
+            });
+        }
+    </script>
+</body>
+</html>
