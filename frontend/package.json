@@ -11,6 +11,9 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.14",
+    "leaflet": "^1.9.4",
+    "leaflet.heat": "^0.2.0",
+    "papaparse": "^5.5.3",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "tailwindcss": "^4.1.14"
