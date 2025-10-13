@@ -5,6 +5,7 @@ import { WebSocketServer } from "ws";
 import cors from "cors"
 import { userRouter } from "./routes/userRoutes.js";
 import http from "http"
+import { wsMessage } from "./ws/wsMessage.js";
 
 const PORT = process.env.PORT || 3000;
 
@@ -21,16 +22,28 @@ app.use("/", userRouter)
 
 const server = http.createServer(app);
 
-// ✅ Attach WebSocket to the same server
 const wss = new WebSocketServer({ server });
+export const clients = new Map();
 
 wss.on("connection", (ws) => {
   console.log("New client connected");
   ws.on('error', console.error);
 
-  ws.on("message", (message) => {
-    console.log(`Received: ${message}`);
-    ws.send(`Echo: ${message}`);
+  ws.on("message", async (message) => {
+    const msg = JSON.parse(message)
+
+    if (msg.type == "Register") {
+      ws.userId = msg.userId;
+      ws.userType = msg.userType;
+      clients.set(msg.userId, ws);
+      console.log(`User ${msg.userId} (${msg.userType}) registered`);
+      ws.send(JSON.stringify({
+          type: 'authenticated',
+          success: true
+        }));
+    }else if(msg.type == "Message"){
+      await wsMessage(msg);
+  }
   });
 });
 
