@@ -14,7 +14,19 @@ import BroadcastPage from "./pages/BroadcastPage";
 import AppLayout from "./components/common/AppLayout";
 
 const App = () => {
-  const { isLoggedIn, role } = useAppContext();
+  const { isLoggedIn, role, loading } = useAppContext();
+
+  // Show loading spinner while checking authentication
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+        <div className="text-white text-center">
+          <div className="text-6xl mb-4">🌍</div>
+          <div className="text-2xl font-bold">Loading GeoAware...</div>
+        </div>
+      </div>
+    );
+  }
 
   // Redirect to auth if not logged in
   if (!isLoggedIn) {

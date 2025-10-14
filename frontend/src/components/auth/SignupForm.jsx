@@ -1,24 +1,65 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAppContext } from "../../Context/AppContext";
+import { signup } from "../../services/authService";
 
 const SignupForm = () => {
-  const { role, login } = useAppContext();
+  const { role, login, mapRoleToUserType } = useAppContext();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const formData = new FormData(e.target);
-    const fullName = formData.get("fullname");
+    setError("");
+    setLoading(true);
 
-    if (role === "user") {
-      login(role, fullName);
-      navigate("/dashboard");
-    } else {
-      alert(
-        `Signup successful! Your ${role} account is pending verification. You'll receive an email within 24-48 hours once approved.`
-      );
-      e.target.reset();
+    const formData = new FormData(e.target);
+    const password = formData.get("password");
+    const confirmPassword = formData.get("confirmPassword");
+
+    // Validate passwords match
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      setLoading(false);
+      return;
+    }
+
+    const userData = {
+      fullname: formData.get("fullname"),
+      email: formData.get("email"),
+      password: password,
+      userType: mapRoleToUserType(role), // Convert 'user' to 'User', 'responder' to 'Official', 'admin' to 'Admin'
+      phone: formData.get("phone"),
+    };
+
+    try {
+      // Call backend API
+      const response = await signup(userData);
+
+      if (response.success) {
+        // For User role, log them in directly
+        if (role === "user") {
+          alert("Account created successfully! Welcome to GeoAware.");
+          // Auto-login after signup (you might want to call signin here)
+          login(mapRoleToUserType(role), userData.fullname, response.userId);
+          navigate("/dashboard");
+        } else {
+          // For Admin and Official (responder), show pending message
+          alert(
+            `Signup successful! Your ${role} account is pending verification. You'll receive an email within 24-48 hours once approved.`
+          );
+          e.target.reset();
+        }
+      }
+    } catch (err) {
+      if (err.message === "User already exists") {
+        setError("An account with this email or username already exists.");
+      } else {
+        setError(err.message || "Signup failed. Please try again.");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -26,6 +67,12 @@ const SignupForm = () => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+          {error}
+        </div>
+      )}
+
       <div>
         <label className="block text-gray-700 font-semibold mb-1">
           Full Name
@@ -36,6 +83,7 @@ const SignupForm = () => {
           required
           placeholder="John Doe"
           className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 transition"
+          disabled={loading}
         />
       </div>
 
@@ -47,6 +95,7 @@ const SignupForm = () => {
           required
           placeholder="your@email.com"
           className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 transition"
+          disabled={loading}
         />
       </div>
 
@@ -60,6 +109,7 @@ const SignupForm = () => {
           required
           placeholder="+91 XXXXX XXXXX"
           className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 transition"
+          disabled={loading}
         />
       </div>
 
@@ -73,6 +123,7 @@ const SignupForm = () => {
               name="organization"
               required
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 transition"
+              disabled={loading}
             >
               <option value="">Select organization...</option>
               <option value="ndrf">NDRF</option>
@@ -92,6 +143,7 @@ const SignupForm = () => {
               required
               placeholder="EMP12345"
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 transition"
+              disabled={loading}
             />
           </div>
         </>
@@ -109,6 +161,7 @@ const SignupForm = () => {
               required
               placeholder="Enter admin authorization code"
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 transition"
+              disabled={loading}
             />
           </div>
 
@@ -122,6 +175,7 @@ const SignupForm = () => {
               required
               placeholder="Disaster Management Authority"
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 transition"
+              disabled={loading}
             />
           </div>
         </>
@@ -136,7 +190,9 @@ const SignupForm = () => {
           type="password"
           required
           placeholder="••••••••"
+          minLength="6"
           className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 transition"
+          disabled={loading}
         />
       </div>
 
@@ -149,15 +205,20 @@ const SignupForm = () => {
           type="password"
           required
           placeholder="••••••••"
+          minLength="6"
           className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 transition"
+          disabled={loading}
         />
       </div>
 
       <button
         type="submit"
-        className="w-full p-3 bg-gradient-to-br from-blue-500 to-purple-700 text-white font-semibold rounded-lg hover:scale-105 transition transform"
+        disabled={loading}
+        className={`w-full p-3 bg-gradient-to-br from-blue-500 to-purple-700 text-white font-semibold rounded-lg transition transform ${
+          loading ? "opacity-50 cursor-not-allowed" : "hover:scale-105"
+        }`}
       >
-        Sign Up
+        {loading ? "Signing up..." : "Sign Up"}
       </button>
 
       {requiresVerification && (
