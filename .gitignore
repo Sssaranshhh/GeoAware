@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+.idea/
+.vscode/
+data/cache/*
+logs/*
+*.log
+ml/models/*.pkl

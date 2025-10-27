@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+httpx
+pandas
+scikit-learn
+xgboost
+python-dotenv
+pydantic
+pydantic-settings
+numpy
+statsmodels
+scipy
+plotly
+geopy
