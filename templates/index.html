@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>GeoAware Multi-Hazard Prediction</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <div class="container py-5">
+    <h1 class="text-center mb-4">🌍 GeoAware Multi-Hazard Prediction</h1>
+
+    <ul class="nav nav-tabs mb-4" id="tabs">
+      <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#cyclone">Cyclone</button></li>
+      <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#earthquake">Earthquake</button></li>
+      <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#flood">Flood</button></li>
+      <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#forestfire">Forest Fire</button></li>
+    </ul>
+
+    <div class="tab-content">
+
+      <!-- Cyclone -->
+      <div class="tab-pane fade show active" id="cyclone">
+        <form id="cycloneForm" action="/predict/cyclone" method="post">
+          <input type="hidden" name="form_type" value="cyclone">
+          <div class="row g-3">
+            <div class="col-md-4"><label>Sea Surface Temperature</label><input name="Sea_Surface_Temperature" step="any" type="number" class="form-control" required></div>
+            <div class="col-md-4"><label>Atmospheric Pressure</label><input name="Atmospheric_Pressure" step="any" type="number" class="form-control" required></div>
+            <div class="col-md-4"><label>Humidity</label><input name="Humidity" step="any" type="number" class="form-control" required></div>
+            <div class="col-md-4"><label>Wind Shear</label><input name="Wind_Shear" step="any" type="number" class="form-control" required></div>
+            <div class="col-md-4"><label>Vorticity</label><input name="Vorticity" step="any" type="number" class="form-control" required></div>
+            <div class="col-md-4"><label>Latitude</label><input name="Latitude" step="any" type="number" class="form-control" required></div>
+            <div class="col-md-4"><label>Ocean Depth</label><input name="Ocean_Depth" step="any" type="number" class="form-control" required></div>
+            <div class="col-md-4"><label>Proximity to Coastline</label><input name="Proximity_to_Coastline" step="any" type="number" class="form-control" required></div>
+            <div class="col-md-4"><label>Pre-existing Disturbance</label><input name="Pre_existing_Disturbance" step="any" type="number" class="form-control" required></div>
+          </div>
+          <div class="mt-3">
+            <button type="button" class="btn btn-primary" onclick="submitJson('/predict/cyclone','cycloneForm','cycloneResult')">Predict Cyclone</button>
+          </div>
+        </form>
+        <div id="cycloneResult" class="mt-3"></div>
+      </div>
+
+      <!-- Earthquake -->
+      <div class="tab-pane fade" id="earthquake">
+        <form id="earthquakeForm" action="/predict/earthquake" method="post">
+          <input type="hidden" name="form_type" value="earthquake">
+          <div class="row g-3">
+            <div class="col-md-4"><label>Latitude</label><input name="Latitude" step="any" type="number" class="form-control" required></div>
+            <div class="col-md-4"><label>Longitude</label><input name="Longitude" step="any" type="number" class="form-control" required></div>
+            <div class="col-md-4"><label>Depth</label><input name="Depth" step="any" type="number" class="form-control" required></div>
+          </div>
+          <div class="mt-3">
+            <button type="button" class="btn btn-primary" onclick="submitJson('/predict/earthquake','earthquakeForm','earthquakeResult')">Predict Earthquake</button>
+          </div>
+        </form>
+        <div id="earthquakeResult" class="mt-3"></div>
+      </div>
+
+      <!-- Flood -->
+      <div class="tab-pane fade" id="flood">
+        <form id="floodForm" action="/predict/flood" method="post">
+          <input type="hidden" name="form_type" value="flood">
+          <div class="row g-3">
+            <div class="col-md-4"><label>Rainfall (mm)</label><input name="Rainfall (mm)" step="any" type="number" class="form-control" required></div>
+            <div class="col-md-4"><label>Temperature (°C)</label><input name="Temperature (°C)" step="any" type="number" class="form-control" required></div>
+            <div class="col-md-4"><label>Humidity (%)</label><input name="Humidity (%)" step="any" type="number" class="form-control" required></div>
+
+            <div class="col-md-4"><label>River Discharge (m³/s)</label><input name="River Discharge (m³/s)" step="any" type="number" class="form-control" required></div>
+            <div class="col-md-4"><label>Water Level (m)</label><input name="Water Level (m)" step="any" type="number" class="form-control" required></div>
+            <div class="col-md-4"><label>Elevation (m)</label><input name="Elevation (m)" step="any" type="number" class="form-control" required></div>
+
+            <div class="col-md-4"><label>Land Cover</label><input name="Land Cover" type="text" class="form-control" required></div>
+            <div class="col-md-4"><label>Soil Type</label><input name="Soil Type" type="text" class="form-control" required></div>
+            <div class="col-md-4"><label>Population Density</label><input name="Population Density" step="any" type="number" class="form-control" required></div>
+            <div class="col-md-4"><label>Infrastructure</label><input name="Infrastructure" step="any" type="number" class="form-control" required></div>
+            <div class="col-md-4"><label>Historical Floods</label><input name="Historical Floods" step="any" type="number" class="form-control" required></div>
+          </div>
+          <div class="mt-3">
+            <button type="button" class="btn btn-primary" onclick="submitJson('/predict/flood','floodForm','floodResult')">Predict Flood</button>
+          </div>
+        </form>
+        <div id="floodResult" class="mt-3"></div>
+      </div>
+
+      <!-- Forest Fire -->
+      <div class="tab-pane fade" id="forestfire">
+        <form id="forestfireForm" action="/predict/forestfire" method="post">
+          <input type="hidden" name="form_type" value="forestfire">
+          <div class="row g-3">
+            <div class="col-md-3"><label>X</label><input name="X" step="any" type="number" class="form-control" required></div>
+            <div class="col-md-3"><label>Y</label><input name="Y" step="any" type="number" class="form-control" required></div>
+            <div class="col-md-3"><label>FFMC</label><input name="FFMC" step="any" type="number" class="form-control" required></div>
+            <div class="col-md-3"><label>DMC</label><input name="DMC" step="any" type="number" class="form-control" required></div>
+
+            <div class="col-md-3"><label>DC</label><input name="DC" step="any" type="number" class="form-control" required></div>
+            <div class="col-md-3"><label>ISI</label><input name="ISI" step="any" type="number" class="form-control" required></div>
+            <div class="col-md-3"><label>temp</label><input name="temp" step="any" type="number" class="form-control" required></div>
+            <div class="col-md-3"><label>RH</label><input name="RH" step="any" type="number" class="form-control" required></div>
+
+            <div class="col-md-3"><label>wind</label><input name="wind" step="any" type="number" class="form-control" required></div>
+            <div class="col-md-3"><label>rain</label><input name="rain" step="any" type="number" class="form-control" required></div>
+          </div>
+          <div class="mt-3">
+            <button type="button" class="btn btn-primary" onclick="submitJson('/predict/forestfire','forestfireForm','forestfireResult')">Predict Fire</button>
+          </div>
+        </form>
+        <div id="forestfireResult" class="mt-3"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    async function submitJson(endpoint, formId, resultId) {
+      const form = document.getElementById(formId);
+      const formData = new FormData(form);
+      const obj = {};
+      for (const [k, v] of formData.entries()) obj[k] = v;
+      const resultBox = document.getElementById(resultId);
+      resultBox.innerHTML = '<div class="alert alert-warning">Processing...</div>';
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(obj)
+        });
+        const data = await res.json();
+        resultBox.innerHTML = `<div class="alert alert-info">Response: <pre>${JSON.stringify(data, null, 2)}</pre></div>`;
+      } catch (err) {
+        resultBox.innerHTML = `<div class="alert alert-danger">Error: ${err.message}</div>`;
+      }
+    }
+  </script>
+</body>
+</html>
