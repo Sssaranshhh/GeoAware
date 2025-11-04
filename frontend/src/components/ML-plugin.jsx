@@ -1,19 +1,5 @@
-/*
-GeoAwareReactComponent_Tailwind.jsx
-Single-file React component (default export) rebuilt with Tailwind CSS.
-
-Usage:
-1. Place this file in your React project (e.g. src/components/GeoAwareReactComponent_Tailwind.jsx).
-2. Ensure Tailwind is configured and its CSS is included (e.g. import './index.css' where Tailwind is set up).
-3. Backend endpoints remain: /predict/cyclone, /predict/earthquake, /predict/flood, /predict/forestfire.
-
-Notes:
-- Tabs & forms implemented with React state.
-- Inputs are controlled; numeric fields use type="number".
-- submitJson posts JSON and displays results under each form.
-*/
-
 import React, { useState } from "react";
+const BASE_URL = "http://localhost:3000";
 
 const emptyCyclone = {
   Sea_Surface_Temperature: "",
@@ -64,7 +50,7 @@ export default function MLplugin() {
   const [flood, setFlood] = useState(emptyFlood);
   const [forestfire, setForestfire] = useState(emptyForestFire);
 
-  const [results, setResults] = useState({}); // keyed by form id
+  const [results, setResults] = useState({}); 
   const [loading, setLoading] = useState({});
 
   const handleChange = (setter) => (e) => {
@@ -75,12 +61,26 @@ export default function MLplugin() {
   async function submitJson(endpoint, payloadKey, payload) {
     setLoading((prev) => ({ ...prev, [payloadKey]: true }));
     setResults((prev) => ({ ...prev, [payloadKey]: null }));
+
+    // build full URL: if caller passed a relative path (starts with '/'),
+    // prepend BASE_URL so requests go to your backend on port 3000
+    const url = endpoint.startsWith("http")
+      ? endpoint
+      : `${BASE_URL}${endpoint}`;
+
     try {
-      const res = await fetch(endpoint, {
+      const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+
+      // handle non-2xx responses
+      if (!res.ok) {
+        const text = await res.text().catch(() => null);
+        throw new Error(`HTTP ${res.status}${text ? ` - ${text}` : ""}`);
+      }
+
       const data = await res.json();
       setResults((prev) => ({ ...prev, [payloadKey]: { ok: true, data } }));
     } catch (err) {
@@ -92,6 +92,7 @@ export default function MLplugin() {
       setLoading((prev) => ({ ...prev, [payloadKey]: false }));
     }
   }
+
 
   const tabButton = (id, label) => (
     <button
