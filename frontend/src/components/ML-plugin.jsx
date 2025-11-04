@@ -327,11 +327,6 @@ export default function MLplugin() {
           </section>
         )}
       </div>
-
-      <div className="mt-8 text-center text-sm text-gray-500">
-        Make sure your backend endpoints accept JSON and CORS is configured if
-        API runs on a different origin.
-      </div>
     </div>
   );
 }
