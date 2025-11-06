@@ -6,52 +6,33 @@ import { signin } from "../../services/authService";
 const LoginForm = () => {
   const { login } = useAppContext();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
-    const formData = new FormData(e.target);
-    const credentials = {
-      email: formData.get("email"),
-      password: formData.get("password"),
-    };
+    const email = e.target.email.value.trim();
+    const password = e.target.password.value;
 
     try {
-      // Call backend API
-      const response = await signin(credentials);
+      const res = await signin({ email, password });
 
-      // Decode token to get user info
-      const token = response.token;
-      const base64Url = token.split(".")[1];
-      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-      const jsonPayload = decodeURIComponent(
-        atob(base64)
-          .split("")
-          .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
-          .join("")
-      );
-      const decoded = JSON.parse(jsonPayload);
+      // ✅ Backend must send: token, userId, username, role
+      const { token, userId, username, role } = res;
 
-      // Extract name from email
-      const localPart = credentials.email.split("@")[0];
-      const userName =
-        localPart
-          .replace(/[._]/g, " ")
-          .split(" ")
-          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(" ") || "User";
+      if (!token) throw new Error("Invalid response from server.");
 
-      // Update context with user info
-      login(decoded.role, userName, response.userId);
+      // ✅ Save info in context
+      login(role, username, userId);
 
-      // Navigate to dashboard
+      // ✅ Go to dashboard
       navigate("/dashboard");
     } catch (err) {
-      setError(err.message || "Login failed. Please check your credentials.");
+      console.error("Login error:", err);
+      setError(err.message || "Login failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -60,42 +41,52 @@ const LoginForm = () => {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-          {error}
-        </div>
+        <div className="bg-red-100 text-red-700 p-3 rounded-md">{error}</div>
       )}
 
       <div>
-        <label className="block text-gray-700 font-semibold mb-1">Email</label>
+        <label
+          htmlFor="email"
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
+          Email
+        </label>
         <input
+          id="email"
           name="email"
           type="email"
           required
-          placeholder="your@email.com"
-          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 transition"
           disabled={loading}
+          placeholder="your@email.com"
+          className="w-full border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
         />
       </div>
 
       <div>
-        <label className="block text-gray-700 font-semibold mb-1">
+        <label
+          htmlFor="password"
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
           Password
         </label>
         <input
+          id="password"
           name="password"
           type="password"
           required
-          placeholder="••••••••"
-          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 transition"
           disabled={loading}
+          placeholder="Enter your password"
+          className="w-full border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
         />
       </div>
 
       <button
         type="submit"
         disabled={loading}
-        className={`w-full p-3 bg-gradient-to-br from-blue-500 to-purple-700 text-white font-semibold rounded-lg transition transform ${
-          loading ? "opacity-50 cursor-not-allowed" : "hover:scale-105"
+        className={`w-full p-3 rounded-md text-white font-medium transition ${
+          loading
+            ? "bg-blue-400 cursor-not-allowed"
+            : "bg-blue-600 hover:bg-blue-700"
         }`}
       >
         {loading ? "Logging in..." : "Login"}

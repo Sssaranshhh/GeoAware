@@ -7,71 +7,54 @@ import {
 } from "../services/authService";
 
 const AppContext = createContext();
-
-export const useAppContext = () => {
-  const context = useContext(AppContext);
-  if (!context) {
-    throw new Error("useAppContext must be used within AppProvider");
-  }
-  return context;
-};
+export const useAppContext = () => useContext(AppContext);
 
 export const AppProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [role, setRole] = useState("user"); // 'user', 'responder', 'admin'
+  const [role, setRole] = useState("user");
   const [userName, setUserName] = useState("John Doe");
   const [userId, setUserId] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Map backend userType to frontend role
-  const mapUserTypeToRole = (userType) => {
-    const roleMap = {
-      User: "user",
-      Official: "responder",
-      Admin: "admin",
-    };
-    return roleMap[userType] || "user";
+  // Simple mapping
+  const roleMap = {
+    User: "user",
+    Official: "responder",
+    Admin: "admin",
   };
 
-  // Map frontend role to backend userType
-  const mapRoleToUserType = (role) => {
-    const userTypeMap = {
-      user: "User",
-      responder: "Official",
-      admin: "Admin",
-    };
-    return userTypeMap[role] || "User";
+  const userTypeMap = {
+    user: "User",
+    responder: "Official",
+    admin: "Admin",
   };
 
-  // Check authentication on mount
+  // ✅ On app start, check auth
   useEffect(() => {
-    const checkAuth = () => {
-      if (isAuthenticated()) {
-        const token = getToken();
-        const decoded = decodeToken(token);
+    if (isAuthenticated()) {
+      const decoded = decodeToken(getToken());
+      if (decoded) {
+        setIsLoggedIn(true);
+        setUserId(decoded.userId);
+        setRole(roleMap[decoded.role] || "user");
 
-        if (decoded) {
-          setIsLoggedIn(true);
-          setUserId(decoded.userId);
-          setRole(mapUserTypeToRole(decoded.role));
-          // You can fetch user details here if needed
-        } else {
-          // Invalid token
-          logoutService();
-          setIsLoggedIn(false);
-        }
+        // ✅ Set username from token or localStorage
+        const storedName =
+          decoded.username || localStorage.getItem("userName") || "User";
+        setUserName(storedName);
+      } else {
+        logoutService();
       }
-      setLoading(false);
-    };
-
-    checkAuth();
+    }
+    setLoading(false);
   }, []);
 
   const login = (userRole, name, id) => {
-    setRole(mapUserTypeToRole(userRole));
+    setIsLoggedIn(true);
+    setRole(roleMap[userRole] || "user");
     setUserName(name);
     setUserId(id);
-    setIsLoggedIn(true);
+    localStorage.setItem("userName", name);
   };
 
   const logout = () => {
@@ -80,20 +63,24 @@ export const AppProvider = ({ children }) => {
     setRole("user");
     setUserName("John Doe");
     setUserId(null);
+    localStorage.removeItem("userName");
   };
 
-  const value = {
-    isLoggedIn,
-    role,
-    userName,
-    userId,
-    loading,
-    login,
-    logout,
-    setRole,
-    setUserName,
-    mapRoleToUserType,
-  };
-
-  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
+  return (
+    <AppContext.Provider
+      value={{
+        isLoggedIn,
+        role,
+        userName,
+        userId,
+        loading,
+        login,
+        logout,
+        setRole,
+        userTypeMap,
+      }}
+    >
+      {children}
+    </AppContext.Provider>
+  );
 };
