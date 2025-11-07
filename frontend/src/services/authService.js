@@ -25,10 +25,15 @@ export const signin = async (credentials) => {
       password: credentials.password,
     });
 
-    // Store token and userId in localStorage
+    // Store token, userId, and username in localStorage
     if (response.data.token) {
       localStorage.setItem("token", response.data.token);
       localStorage.setItem("userId", response.data.userId);
+
+      // ✅ FIX: Store username from backend response
+      if (response.data.username) {
+        localStorage.setItem("userName", response.data.username);
+      }
     }
 
     return response.data;
@@ -45,6 +50,7 @@ export const signin = async (credentials) => {
 export const logout = () => {
   localStorage.removeItem("token");
   localStorage.removeItem("userId");
+  localStorage.removeItem("userName"); // ✅ FIX: Clear username on logout
 };
 
 // Check if user is authenticated

@@ -49,34 +49,38 @@ userRouter.post("/signup", async (req, res) => {
 });
 
 userRouter.post("/signin", async (req, res) => {
-  try {
-    const { email, password } = req.body;
+  const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
-    if (!user) return res.status(403).json({ message: "User not found" });
-
-    const validPassword = await bcrypt.compare(password, user.password);
-    if (!validPassword)
-      return res.status(403).json({ message: "Invalid password" });
-
-    // ✅ Include username in token and response
-    const token = jwt.sign(
-      {
-        userId: user._id,
-        role: user.userType,
-        username: user.username,
-      },
-      process.env.JWT_PASS
-    );
-
-    res.json({
-      success: true,
-      token,
-      userId: user._id,
-      username: user.username,
+  const user = await User.findOne({
+    email: email,
+  });
+  if (!user) {
+    res.status(403).json({
+      message: "User not found",
     });
-  } catch (err) {
-    console.error("Signin error:", err);
-    res.status(500).json({ message: "Server error" });
+    return;
   }
+
+  const isValid = await bcrypt.compare(password, user?.password);
+  if (!isValid) {
+    res.status(403).json({
+      message: "Invalid password",
+    });
+    return;
+  }
+
+  const token = jwt.sign(
+    {
+      userId: user._id,
+      role: user.userType,
+      username: user.username,
+    },
+    process.env.JWT_PASS
+  );
+
+  res.json({
+    token,
+    userId: user._id,
+    username: user.username,
+  });
 });

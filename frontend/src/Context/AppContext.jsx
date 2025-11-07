@@ -7,53 +7,83 @@ import {
 } from "../services/authService";
 
 const AppContext = createContext();
-export const useAppContext = () => useContext(AppContext);
+
+export const useAppContext = () => {
+  const context = useContext(AppContext);
+  if (!context) {
+    throw new Error("useAppContext must be used within AppProvider");
+  }
+  return context;
+};
 
 export const AppProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [role, setRole] = useState("user");
+  const [role, setRole] = useState("user"); // 'user', 'responder', 'admin'
   const [userName, setUserName] = useState("John Doe");
   const [userId, setUserId] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Simple mapping
-  const roleMap = {
-    User: "user",
-    Official: "responder",
-    Admin: "admin",
+  // Map backend userType to frontend role
+  const mapUserTypeToRole = (userType) => {
+    const roleMap = {
+      User: "user",
+      Official: "responder",
+      Admin: "admin",
+    };
+    return roleMap[userType] || "user";
   };
 
-  const userTypeMap = {
-    user: "User",
-    responder: "Official",
-    admin: "Admin",
+  // Map frontend role to backend userType
+  const mapRoleToUserType = (role) => {
+    const userTypeMap = {
+      user: "User",
+      responder: "Official",
+      admin: "Admin",
+    };
+    return userTypeMap[role] || "User";
   };
 
-  // ✅ On app start, check auth
+  // Check authentication on mount
   useEffect(() => {
-    if (isAuthenticated()) {
-      const decoded = decodeToken(getToken());
-      if (decoded) {
-        setIsLoggedIn(true);
-        setUserId(decoded.userId);
-        setRole(roleMap[decoded.role] || "user");
+    const checkAuth = () => {
+      if (isAuthenticated()) {
+        const token = getToken();
+        const decoded = decodeToken(token);
 
-        // ✅ Set username from token or localStorage
-        const storedName =
-          decoded.username || localStorage.getItem("userName") || "User";
-        setUserName(storedName);
-      } else {
-        logoutService();
+        if (decoded) {
+          setIsLoggedIn(true);
+          setUserId(decoded.userId);
+          setRole(mapUserTypeToRole(decoded.role));
+
+          // ✅ FIX: Get username from decoded JWT token
+          if (decoded.username) {
+            setUserName(decoded.username);
+          } else {
+            // Fallback: Try localStorage if token doesn't have username
+            const storedUsername = localStorage.getItem("userName");
+            if (storedUsername) {
+              setUserName(storedUsername);
+            }
+          }
+        } else {
+          // Invalid token
+          logoutService();
+          setIsLoggedIn(false);
+        }
       }
-    }
-    setLoading(false);
+      setLoading(false);
+    };
+
+    checkAuth();
   }, []);
 
   const login = (userRole, name, id) => {
-    setIsLoggedIn(true);
-    setRole(roleMap[userRole] || "user");
+    setRole(mapUserTypeToRole(userRole));
     setUserName(name);
     setUserId(id);
+    setIsLoggedIn(true);
+
+    // ✅ FIX: Store username in localStorage as backup
     localStorage.setItem("userName", name);
   };
 
@@ -63,24 +93,23 @@ export const AppProvider = ({ children }) => {
     setRole("user");
     setUserName("John Doe");
     setUserId(null);
+
+    // ✅ FIX: Clear stored username on logout
     localStorage.removeItem("userName");
   };
 
-  return (
-    <AppContext.Provider
-      value={{
-        isLoggedIn,
-        role,
-        userName,
-        userId,
-        loading,
-        login,
-        logout,
-        setRole,
-        userTypeMap,
-      }}
-    >
-      {children}
-    </AppContext.Provider>
-  );
+  const value = {
+    isLoggedIn,
+    role,
+    userName,
+    userId,
+    loading,
+    login,
+    logout,
+    setRole,
+    setUserName,
+    mapRoleToUserType, // ✅ IMPORTANT: Exported for SignupForm
+  };
+
+  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };

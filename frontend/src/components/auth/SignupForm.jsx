@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAppContext } from "../../Context/AppContext";
+import { useAppContext } from "../../context/AppContext";
 import { signup } from "../../services/authService";
 
 const SignupForm = () => {
+  // ✅ FIX: Added mapRoleToUserType to destructuring
   const { role, login, mapRoleToUserType } = useAppContext();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -29,7 +30,7 @@ const SignupForm = () => {
       fullname: formData.get("fullname"),
       email: formData.get("email"),
       password: password,
-      userType: mapRoleToUserType(role), // Convert 'user' to 'User', 'responder' to 'Official', 'admin' to 'Admin'
+      userType: mapRoleToUserType(role), // ✅ FIX: Now this works!
       phone: formData.get("phone"),
     };
 
@@ -41,7 +42,7 @@ const SignupForm = () => {
         // For User role, log them in directly
         if (role === "user") {
           alert("Account created successfully! Welcome to GeoAware.");
-          // Auto-login after signup (you might want to call signin here)
+          // Auto-login after signup
           login(mapRoleToUserType(role), userData.fullname, response.userId);
           navigate("/dashboard");
         } else {
