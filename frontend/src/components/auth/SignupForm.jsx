@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAppContext } from "../../context/AppContext";
-import { signup } from "../../services/authService";
+import { useAppContext } from "../../Context/AppContext";
+import { signup, signin } from "../../services/authService"; // ✅ Added signin import
 
 const SignupForm = () => {
-  // ✅ FIX: Added mapRoleToUserType to destructuring
   const { role, login, mapRoleToUserType } = useAppContext();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -30,21 +29,50 @@ const SignupForm = () => {
       fullname: formData.get("fullname"),
       email: formData.get("email"),
       password: password,
-      userType: mapRoleToUserType(role), // ✅ FIX: Now this works!
+      userType: mapRoleToUserType(role),
       phone: formData.get("phone"),
     };
 
     try {
-      // Call backend API
+      // Call backend signup API
       const response = await signup(userData);
 
       if (response.success) {
-        // For User role, log them in directly
+        // For User role, auto-login them after signup
         if (role === "user") {
-          alert("Account created successfully! Welcome to GeoAware.");
-          // Auto-login after signup
-          login(mapRoleToUserType(role), userData.fullname, response.userId);
-          navigate("/dashboard");
+          try {
+            const signinResponse = await signin({
+              email: userData.email,
+              password: userData.password,
+            });
+
+            // Decode token to get user info
+            const token = signinResponse.token;
+            const base64Url = token.split(".")[1];
+            const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+            const jsonPayload = decodeURIComponent(
+              atob(base64)
+                .split("")
+                .map(
+                  (c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2)
+                )
+                .join("")
+            );
+            const decoded = JSON.parse(jsonPayload);
+
+            // Get username from signin response
+            const userName = signinResponse.username || userData.fullname;
+
+            // Update context with user info (this stores token via authService)
+            login(decoded.role, userName, signinResponse.userId);
+
+            alert("Account created successfully! Welcome to GeoAware.");
+            navigate("/dashboard");
+          } catch (loginError) {
+            // If auto-login fails, show message and redirect to login
+            alert("Account created! Please login with your credentials.");
+            navigate("/auth");
+          }
         } else {
           // For Admin and Official (responder), show pending message
           alert(
