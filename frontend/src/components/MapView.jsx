@@ -7,6 +7,44 @@ export default function MapView() {
   const [mapLoaded, setMapLoaded] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
 
+  // ⭐ NEW: helper to keep heatmap looking good at different zooms
+  const getHeatRadius = (zoom) => {
+    if (zoom <= 4) return 40;
+    if (zoom <= 5) return 35;
+    if (zoom <= 6) return 30;
+    if (zoom <= 7) return 25;
+    if (zoom <= 8) return 20;
+    return 15; // very zoomed in
+  };
+
+  // ⭐ NEW: simple hook for future shockwaves / alerts
+  const triggerShockwave = (lat, lng) => {
+    if (!map.current || !window.L) return;
+
+    let radius = 100; // meters
+    let opacity = 0.7;
+
+    const circle = window.L.circle([lat, lng], {
+      radius,
+      color: "red",
+      weight: 2,
+      fillOpacity: opacity,
+    }).addTo(map.current);
+
+    const interval = setInterval(() => {
+      radius += 400;
+      opacity -= 0.08;
+
+      circle.setRadius(radius);
+      circle.setStyle({ opacity, fillOpacity: opacity });
+
+      if (opacity <= 0.05) {
+        map.current.removeLayer(circle);
+        clearInterval(interval);
+      }
+    }, 150);
+  };
+
   useEffect(() => {
     console.log("🗺️ Initializing map and scripts...");
 
@@ -40,24 +78,39 @@ export default function MapView() {
           return;
         }
 
-        // Create map centered on India
         map.current = window.L.map(mapContainer.current).setView(
           [22.9734, 78.6569],
           5
         );
-        console.log("🗺️ Map created, centered at [22.9734, 78.6569]");
 
-        // Add OpenStreetMap tiles
-        window.L.tileLayer(
+        const street = window.L.tileLayer(
           "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
           {
             attribution: "© OpenStreetMap contributors",
             maxZoom: 19,
           }
-        ).addTo(map.current);
+        );
+
+        const satellite = window.L.tileLayer(
+          "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+          {
+            attribution: "Tiles © Esri & others",
+            maxZoom: 19,
+          }
+        );
+
+        // default = street
+        street.addTo(map.current);
+        console.log("✅ Street tile layer added");
+
+        // ⭐ NEW: layer control to switch Street / Satellite
+        const baseLayers = {
+          "Street View": street,
+          "Satellite View": satellite,
+        };
+        window.L.control.layers(baseLayers).addTo(map.current);
 
         setMapLoaded(true);
-        console.log("✅ Tile layer added");
 
         // Load and parse CSV data
         loadEarthquakeData();
@@ -208,10 +261,12 @@ export default function MapView() {
       const heatPoints = earthquakeData.map((d) => [d.lat, d.lng, d.mag * 0.3]);
       console.log("🔥 Heatmap points sample:", heatPoints.slice(0, 5));
 
-      if (window.L.heatLayer) {
+      if (window.L.heatLayer && map.current) {
+        const initialRadius = getHeatRadius(map.current.getZoom());
+
         heatLayer.current = window.L.heatLayer(heatPoints, {
-          radius: 25,
-          blur: 15,
+          radius: initialRadius,
+          blur: initialRadius * 0.6,
           maxZoom: 10,
           minOpacity: 0.4,
           gradient: {
@@ -222,6 +277,19 @@ export default function MapView() {
           },
         }).addTo(map.current);
         console.log("✅ Heatmap layer added");
+
+        // ⭐ NEW: update heatmap radius when zoom changes
+        map.current.on("zoomend", () => {
+          if (!heatLayer.current || !map.current) return;
+          const z = map.current.getZoom();
+          const r = getHeatRadius(z);
+          if (heatLayer.current.setOptions) {
+            heatLayer.current.setOptions({
+              radius: r,
+              blur: r * 0.6,
+            });
+          }
+        });
       } else {
         console.error("❌ Leaflet Heat plugin not loaded");
       }
@@ -246,13 +314,18 @@ export default function MapView() {
               )}, ${d.lng.toFixed(2)}
             </div>
           `);
+
+          // ⭐ OPTIONAL: trigger shockwave for stronger quakes (demo)
+          // if (d.mag >= 5.0) {
+          //   triggerShockwave(d.lat, d.lng);
+          // }
         }
       });
       console.log("📍 Significant earthquake markers added");
 
       // Fit map to show all earthquakes
       const bounds = earthquakeData.map((d) => [d.lat, d.lng]);
-      if (bounds.length > 0) {
+      if (bounds.length > 0 && map.current) {
         console.log("🧭 Fitting map to bounds...");
         setTimeout(() => {
           map.current.fitBounds(bounds, { padding: [50, 50] });
