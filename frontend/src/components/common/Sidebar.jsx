@@ -18,6 +18,13 @@ const Sidebar = () => {
       icon: "🗺️",
       roles: ["user", "responder", "admin"],
     },
+    {
+      path: "/safety",
+      label: "Safety Tips",
+      icon: "🛡️",
+      roles: ["user", "responder", "admin"],
+    },
+
     { path: "/alert", label: "Report Alert", icon: "🚨", roles: ["user"] },
     {
       path: "/verify",

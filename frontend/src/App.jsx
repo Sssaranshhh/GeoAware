@@ -9,6 +9,7 @@ import MapPage from "./pages/MapPage";
 import AlertPage from "./pages/AlertPage";
 import VerifyPage from "./pages/VerifyPage";
 import BroadcastPage from "./pages/BroadcastPage";
+import SafetyPage from "./pages/SafetyPage";
 
 // Layout wrapper for authenticated pages
 import AppLayout from "./components/common/AppLayout";
@@ -50,7 +51,7 @@ const App = () => {
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="map" element={<MapPage />} />
-
+            <Route path="safety" element={<SafetyPage />} />
             {/* User-specific routes */}
             {role === "user" && <Route path="alert" element={<AlertPage />} />}
 
