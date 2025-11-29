@@ -7,7 +7,7 @@ const SafetyPage = () => {
     earthquake: {
       icon: "🌍",
       title: "Earthquake Safety",
-      color: "from-orange-500 to-red-600",
+      color: "text-indigo-600",
       before: [
         "Secure heavy furniture and appliances to walls",
         "Keep emergency supplies (water, food, first aid kit)",
@@ -30,10 +30,11 @@ const SafetyPage = () => {
         "Use text messages instead of phone calls",
       ],
     },
+
     flood: {
       icon: "🌊",
       title: "Flood Safety",
-      color: "from-blue-500 to-cyan-600",
+      color: "text-blue-600",
       before: [
         "Know your flood risk and evacuation routes",
         "Keep emergency supplies on higher floors",
@@ -56,10 +57,12 @@ const SafetyPage = () => {
         "Watch for damaged electrical wiring",
       ],
     },
+
+    // ✅ RESTORED from original code
     landslide: {
       icon: "⛰️",
       title: "Landslide Safety",
-      color: "from-amber-600 to-orange-700",
+      color: "text-amber-700",
       before: [
         "Learn about landslide warning signs in your area",
         "Plant ground cover on slopes",
@@ -82,10 +85,11 @@ const SafetyPage = () => {
         "Replant damaged ground as soon as possible",
       ],
     },
+
     fire: {
       icon: "🔥",
       title: "Fire Safety",
-      color: "from-red-500 to-orange-600",
+      color: "text-red-600",
       before: [
         "Install smoke alarms on every level",
         "Create and practice fire escape plan",
@@ -108,10 +112,11 @@ const SafetyPage = () => {
         "Watch for hot spots that could reignite",
       ],
     },
+
     storm: {
       icon: "⛈️",
       title: "Storm Safety",
-      color: "from-gray-600 to-slate-700",
+      color: "text-slate-700",
       before: [
         "Trim trees and secure loose outdoor items",
         "Stock emergency supplies (flashlights, batteries)",
@@ -139,109 +144,97 @@ const SafetyPage = () => {
   const disasters = Object.keys(safetyData);
 
   return (
-    <div>
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">Safety Guidelines</h1>
-        <p className="text-gray-600 mt-1">
+    <div className="space-y-10">
+      {/* Page Title */}
+      <div>
+        <h1 className="text-3xl font-bold text-slate-800">Safety Guidelines</h1>
+        <p className="text-slate-600 mt-1">
           Essential safety tips to protect yourself and your family during
           disasters
         </p>
       </div>
 
-      <div className="bg-white p-4 rounded-2xl shadow-md mb-6">
-        <h2 className="text-lg font-semibold text-gray-700 mb-3">
-          Select Disaster Type
-        </h2>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-          {disasters.map((disaster) => (
-            <button
-              key={disaster}
-              onClick={() => setSelectedDisaster(disaster)}
-              className={`p-4 rounded-xl border-2 transition transform hover:scale-105 ${
+      {/* Disaster Selector */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+        {disasters.map((disaster) => (
+          <button
+            key={disaster}
+            onClick={() => setSelectedDisaster(disaster)}
+            className={`p-5 rounded-2xl shadow-sm border-2 transition-all 
+              ${
                 selectedDisaster === disaster
-                  ? "border-blue-500 bg-blue-50 shadow-md"
-                  : "border-gray-200 bg-white hover:border-blue-300"
+                  ? "border-indigo-500 bg-indigo-50 shadow-md scale-105"
+                  : "border-slate-200 bg-white hover:border-indigo-300 hover:shadow-md hover:scale-105"
               }`}
-            >
-              <div className="text-4xl mb-2">{safetyData[disaster].icon}</div>
-              <div className="text-sm font-semibold text-gray-700 capitalize">
-                {disaster}
-              </div>
-            </button>
-          ))}
-        </div>
+          >
+            <div className="text-4xl mb-2">{safetyData[disaster].icon}</div>
+            <p className="text-sm font-semibold text-slate-700 capitalize">
+              {disaster}
+            </p>
+          </button>
+        ))}
       </div>
 
-      <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-        <div
-          className={`bg-gradient-to-r ${safetyData[selectedDisaster].color} p-6 text-white`}
-        >
+      {/* Safety Card */}
+      <div className="bg-white border border-slate-200 rounded-2xl shadow-lg overflow-hidden">
+        {/* Header */}
+        <div className="p-6 border-b bg-gradient-to-r from-indigo-50 to-sky-50">
           <div className="flex items-center gap-4">
-            <div className="text-6xl">{safetyData[selectedDisaster].icon}</div>
+            <span className="text-5xl">
+              {safetyData[selectedDisaster].icon}
+            </span>
             <div>
-              <h2 className="text-3xl font-bold">
+              <h2
+                className={`text-2xl font-bold ${safetyData[selectedDisaster].color}`}
+              >
                 {safetyData[selectedDisaster].title}
               </h2>
-              <p className="text-white/90 mt-1">Stay safe and prepared</p>
+              <p className="text-slate-500">Stay safe and prepared</p>
             </div>
           </div>
         </div>
 
-        <div className="p-6 space-y-6">
+        {/* Content */}
+        <div className="p-6 space-y-10">
+          {/* BEFORE */}
           <div>
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-2xl">⏰</span>
-              <h3 className="text-xl font-bold text-gray-800">
-                Before the Disaster
-              </h3>
-            </div>
-            <ul className="space-y-2">
+            <h3 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
+              ⏰ Before the Disaster
+            </h3>
+            <ul className="mt-3 space-y-2">
               {safetyData[selectedDisaster].before.map((tip, index) => (
-                <li
-                  key={index}
-                  className="flex items-start gap-3 text-gray-700"
-                >
-                  <span className="text-green-500 font-bold mt-1">✓</span>
+                <li key={index} className="flex gap-3 text-slate-700">
+                  <span className="text-green-500 font-bold">✓</span>
                   <span>{tip}</span>
                 </li>
               ))}
             </ul>
           </div>
 
-          <div className="border-t pt-6">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-2xl">🚨</span>
-              <h3 className="text-xl font-bold text-gray-800">
-                During the Disaster
-              </h3>
-            </div>
-            <ul className="space-y-2">
+          {/* DURING */}
+          <div>
+            <h3 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
+              🚨 During the Disaster
+            </h3>
+            <ul className="mt-3 space-y-2">
               {safetyData[selectedDisaster].during.map((tip, index) => (
-                <li
-                  key={index}
-                  className="flex items-start gap-3 text-gray-700"
-                >
-                  <span className="text-orange-500 font-bold mt-1">!</span>
+                <li key={index} className="flex gap-3 text-slate-700">
+                  <span className="text-orange-500 font-bold">!</span>
                   <span>{tip}</span>
                 </li>
               ))}
             </ul>
           </div>
 
-          <div className="border-t pt-6">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-2xl">✅</span>
-              <h3 className="text-xl font-bold text-gray-800">
-                After the Disaster
-              </h3>
-            </div>
-            <ul className="space-y-2">
+          {/* AFTER */}
+          <div>
+            <h3 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
+              ✅ After the Disaster
+            </h3>
+            <ul className="mt-3 space-y-2">
               {safetyData[selectedDisaster].after.map((tip, index) => (
-                <li
-                  key={index}
-                  className="flex items-start gap-3 text-gray-700"
-                >
-                  <span className="text-blue-500 font-bold mt-1">→</span>
+                <li key={index} className="flex gap-3 text-slate-700">
+                  <span className="text-blue-500 font-bold">→</span>
                   <span>{tip}</span>
                 </li>
               ))}
@@ -249,8 +242,9 @@ const SafetyPage = () => {
           </div>
         </div>
 
-        <div className="bg-red-50 border-t-2 border-red-200 p-4">
-          <div className="flex items-center justify-center gap-4">
+        {/* Emergency Contact */}
+        <div className="bg-red-50 border-t border-red-200 p-5">
+          <div className="flex items-center justify-center gap-3">
             <span className="text-2xl">📞</span>
             <div className="text-center">
               <p className="font-bold text-red-700">

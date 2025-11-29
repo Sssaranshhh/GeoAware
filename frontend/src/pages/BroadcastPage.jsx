@@ -3,15 +3,16 @@ import BroadcastForm from "../components/forms/BroadcastForm";
 
 const BroadcastPage = () => {
   return (
-    <div>
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">
-          Broadcast Emergency Alert
-        </h1>
-        <p className="text-gray-600 mt-1">
-          Send official emergency alerts to communities in affected regions
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-2xl font-bold text-slate-800">
+          Broadcast Emergency Alert 📢
+        </h2>
+        <p className="text-slate-600 text-sm">
+          Send warnings to all users in the affected region.
         </p>
       </div>
+
       <BroadcastForm />
     </div>
   );

@@ -66,6 +66,7 @@ const MapView = () => {
         map.current = null;
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const getUserLocation = () => {
@@ -75,7 +76,7 @@ const MapView = () => {
       (position) => {
         const { latitude: lat, longitude: lng, accuracy } = position.coords;
 
-        // Add user location marker
+        // 🧭 User location marker with custom icon + popup
         window.L.marker([lat, lng], {
           icon: window.L.icon({
             iconUrl:
@@ -93,7 +94,7 @@ const MapView = () => {
           .addTo(map.current)
           .bindPopup("<strong>Your Location</strong>");
 
-        // Add accuracy circle
+        // 🔵 Accuracy circle around user
         if (accuracy && accuracy > 0 && accuracy < 100000) {
           window.L.circle([lat, lng], {
             radius: accuracy,
@@ -119,7 +120,7 @@ const MapView = () => {
 
       if (earthquakeData.length === 0) return;
 
-      // Create heatmap
+      // 🌡 Heatmap points
       const heatPoints = earthquakeData.map((d) => [d.lat, d.lng, d.mag * 0.3]);
 
       if (window.L.heatLayer) {
@@ -129,18 +130,18 @@ const MapView = () => {
           maxZoom: 10,
           minOpacity: 0.4,
           gradient: {
-            0.2: "#22c55e",
-            0.4: "#facc15",
-            0.6: "#f97316",
-            0.8: "#ef4444",
+            0.2: "#22c55e", // green
+            0.4: "#eab308", // yellow
+            0.6: "#f97316", // orange
+            0.8: "#dc2626", // red
           },
         }).addTo(map.current);
       }
 
-      // Add markers for significant earthquakes
+      // 🔴 Earthquake circle markers with popups (RESTORED)
       earthquakeData.forEach((quake) => {
         if (quake.mag >= 4.0) {
-          const color = quake.mag >= 5.0 ? "#ef4444" : "#f97316";
+          const color = quake.mag >= 5.0 ? "#ef4444" : "#f97316"; // red / orange
           const radius = Math.min(quake.mag * 2, 20);
 
           window.L.circleMarker([quake.lat, quake.lng], {
@@ -150,8 +151,8 @@ const MapView = () => {
             fillOpacity: 0.6,
             weight: 2,
           }).addTo(map.current).bindPopup(`
-              <div style="font-family: sans-serif; min-width: 200px;">
-                <strong>${quake.location}</strong><br/>
+              <div style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-width: 200px;">
+                <strong>${quake.location || "Unknown Location"}</strong><br/>
                 <strong>Magnitude:</strong> ${quake.mag}<br/>
                 <strong>Coordinates:</strong> ${quake.lat.toFixed(
                   2
@@ -165,7 +166,7 @@ const MapView = () => {
       const bounds = earthquakeData.map((d) => [d.lat, d.lng]);
       if (bounds.length > 0) {
         setTimeout(() => {
-          map.current.fitBounds(bounds, { padding: [50, 50] });
+          map.current.fitBounds(bounds, { padding: [80, 80] });
         }, 500);
       }
 
@@ -176,6 +177,7 @@ const MapView = () => {
   };
 
   const parseEarthquakeCSV = (csvText) => {
+    // handle BOM, trim, and split
     const lines = csvText
       .replace(/^\uFEFF/, "")
       .trim()
@@ -194,6 +196,7 @@ const MapView = () => {
     for (let i = 1; i < lines.length; i++) {
       if (!lines[i].trim()) continue;
 
+      // more robust CSV row handling
       const match = lines[i].match(
         /^([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),(.*)$/
       );
@@ -222,42 +225,41 @@ const MapView = () => {
   };
 
   return (
-    <div className="bg-white p-6 rounded-2xl shadow-lg">
-      <div className="flex items-center justify-between mb-4">
-        <div className="text-xl font-semibold">Earthquake Risk Heatmap</div>
+    <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-md space-y-5">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-slate-800">
+          Earthquake Risk Heatmap
+        </h2>
         {dataLoaded && (
-          <div className="text-sm text-green-600 font-medium">
-            ✓ Data Loaded
-          </div>
+          <span className="text-sm font-medium text-emerald-600">
+            ● Live Data Active
+          </span>
         )}
       </div>
 
-      <div className="relative h-[500px] w-full rounded-xl overflow-hidden border border-gray-200">
+      {/* Map Container */}
+      <div className="relative h-[500px] w-full rounded-xl overflow-hidden border border-slate-200">
         <div ref={mapContainer} className="w-full h-full" />
         {!mapLoaded && (
-          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-tr from-indigo-100 to-sky-50 text-gray-600">
-            🗺️ Loading Map...
+          <div className="absolute inset-0 backdrop-blur-sm bg-white/60 flex items-center justify-center text-slate-600 font-medium">
+            🗺️ Loading interactive map...
           </div>
         )}
       </div>
 
-      <div className="mt-4 flex gap-4 flex-wrap">
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-sm bg-green-500" />
-          <span className="text-sm text-gray-700">Low Risk</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-sm bg-yellow-400" />
-          <span className="text-sm text-gray-700">Moderate Risk</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-sm bg-orange-500" />
-          <span className="text-sm text-gray-700">High Risk</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-sm bg-red-500" />
-          <span className="text-sm text-gray-700">Critical Risk</span>
-        </div>
+      {/* Risk Legend */}
+      <div className="flex items-center gap-4 flex-wrap pt-1">
+        {[
+          { label: "Low Risk", color: "bg-green-500" },
+          { label: "Moderate Risk", color: "bg-yellow-400" },
+          { label: "High Risk", color: "bg-orange-500" },
+          { label: "Critical Risk", color: "bg-red-600" },
+        ].map((item) => (
+          <div key={item.label} className="flex items-center gap-2">
+            <span className={`w-3 h-3 rounded-sm ${item.color}`} />
+            <span className="text-xs text-slate-600">{item.label}</span>
+          </div>
+        ))}
       </div>
     </div>
   );

@@ -20,10 +20,12 @@ const App = () => {
   // Show loading spinner while checking authentication
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-        <div className="text-white text-center">
-          <div className="text-6xl mb-4">🌍</div>
-          <div className="text-2xl font-bold">Loading GeoAware...</div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4 animate-bounce">🌍</div>
+          <div className="text-2xl font-bold text-slate-700">
+            Loading GeoAware...
+          </div>
         </div>
       </div>
     );
@@ -32,44 +34,41 @@ const App = () => {
   // Redirect to auth if not logged in
   if (!isLoggedIn) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 p-5">
-        <div className="container mx-auto">
-          <Routes>
-            <Route path="/auth" element={<AuthPage />} />
-            <Route path="*" element={<Navigate to="/auth" replace />} />
-          </Routes>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+        <Routes>
+          <Route path="/auth" element={<AuthPage />} />
+          <Route path="*" element={<Navigate to="/auth" replace />} />
+        </Routes>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 p-5">
-      <div className="container mx-auto">
-        <Routes>
-          <Route path="/" element={<AppLayout />}>
-            <Route index element={<Navigate to="/dashboard" replace />} />
-            <Route path="dashboard" element={<DashboardPage />} />
-            <Route path="map" element={<MapPage />} />
-            <Route path="safety" element={<SafetyPage />} />
-            {/* User-specific routes */}
-            {role === "user" && <Route path="alert" element={<AlertPage />} />}
+    <div className="min-h-screen bg-slate-50">
+      <Routes>
+        <Route path="/" element={<AppLayout />}>
+          <Route index element={<Navigate to="/dashboard" replace />} />
+          <Route path="dashboard" element={<DashboardPage />} />
+          <Route path="map" element={<MapPage />} />
+          <Route path="safety" element={<SafetyPage />} />
 
-            {/* Responder-specific routes */}
-            {role === "responder" && (
-              <Route path="verify" element={<VerifyPage />} />
-            )}
+          {/* User-specific routes */}
+          {role === "user" && <Route path="alert" element={<AlertPage />} />}
 
-            {/* Admin-specific routes */}
-            {role === "admin" && (
-              <Route path="broadcast" element={<BroadcastPage />} />
-            )}
+          {/* Responder-specific routes */}
+          {role === "responder" && (
+            <Route path="verify" element={<VerifyPage />} />
+          )}
 
-            {/* Fallback */}
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
-          </Route>
-        </Routes>
-      </div>
+          {/* Admin-specific routes */}
+          {role === "admin" && (
+            <Route path="broadcast" element={<BroadcastPage />} />
+          )}
+
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Route>
+      </Routes>
     </div>
   );
 };
