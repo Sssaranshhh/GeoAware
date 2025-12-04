@@ -1,377 +1,526 @@
 import React, { useEffect, useRef, useState } from "react";
 
+/*
+  MapView.jsx (fixed - all layers OFF by default)
+  - Loads Leaflet + Leaflet.heat dynamically (CDN) so this works without npm installs.
+  - Loads CSVs from public/ directory (paths used in your repo).
+  - ALL layers OFF by default for clean map view.
+  - Toggle ON to enable each layer individually.
+*/
+
 export default function MapView() {
-  const mapContainer = useRef(null);
-  const map = useRef(null);
-  const heatLayer = useRef(null);
+  const mapContainerRef = useRef(null);
+  const mapRef = useRef(null);
+
+  // LayerGroup refs
+  const heatRef = useRef(null);
+  const quakeLayerRef = useRef(null);
+  const cycloneRef = useRef(null);
+  const floodRef = useRef(null);
+  const fireRef = useRef(null);
+
+  // store raw parsed datasets
+  const earthquakesRef = useRef([]);
+  const cycloneRefData = useRef([]);
+  const floodRefData = useRef([]);
+  const fireRefData = useRef([]);
+
+  // UI state - ALL OFF by default
   const [mapLoaded, setMapLoaded] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
 
-  // ⭐ NEW: helper to keep heatmap looking good at different zooms
-  const getHeatRadius = (zoom) => {
-    if (zoom <= 4) return 40;
-    if (zoom <= 5) return 35;
-    if (zoom <= 6) return 30;
-    if (zoom <= 7) return 25;
-    if (zoom <= 8) return 20;
-    return 15; // very zoomed in
-  };
+  const [showHeatmap, setShowHeatmap] = useState(false);
+  const [showQuakes, setShowQuakes] = useState(false);
+  const [showCyclone, setShowCyclone] = useState(false);
+  const [showFlood, setShowFlood] = useState(false);
+  const [showFire, setShowFire] = useState(false);
 
-  // ⭐ NEW: simple hook for future shockwaves / alerts
-  const triggerShockwave = (lat, lng) => {
-    if (!map.current || !window.L) return;
+  const [magThreshold, setMagThreshold] = useState(3.0);
 
-    let radius = 100; // meters
-    let opacity = 0.7;
-
-    const circle = window.L.circle([lat, lng], {
-      radius,
-      color: "red",
-      weight: 2,
-      fillOpacity: opacity,
-    }).addTo(map.current);
-
-    const interval = setInterval(() => {
-      radius += 400;
-      opacity -= 0.08;
-
-      circle.setRadius(radius);
-      circle.setStyle({ opacity, fillOpacity: opacity });
-
-      if (opacity <= 0.05) {
-        map.current.removeLayer(circle);
-        clearInterval(interval);
-      }
-    }, 150);
-  };
-
+  // Load Leaflet + heat plugin via CDN, then initialize map and layers.
   useEffect(() => {
-    console.log("🗺️ Initializing map and scripts...");
+    // add leaflet css
+    const cssLink = document.createElement("link");
+    cssLink.rel = "stylesheet";
+    cssLink.href = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css";
+    document.head.appendChild(cssLink);
 
-    // Load Leaflet CSS
-    const link = document.createElement("link");
-    link.href =
-      "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css";
-    link.rel = "stylesheet";
-    document.head.appendChild(link);
+    // load leaflet script
+    const leafletScript = document.createElement("script");
+    leafletScript.src = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js";
+    leafletScript.async = true;
 
-    // Load Leaflet JS
-    const script = document.createElement("script");
-    script.src =
-      "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js";
-    script.async = true;
-
-    script.onload = () => {
-      console.log("✅ Leaflet JS loaded");
-
-      // Load Leaflet.heat plugin
+    leafletScript.onload = () => {
+      // load heat plugin next
       const heatScript = document.createElement("script");
-      heatScript.src =
-        "https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js";
+      heatScript.src = "https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js";
       heatScript.async = true;
 
       heatScript.onload = () => {
-        console.log("🔥 Leaflet Heat plugin loaded");
-
-        if (map.current) {
-          console.warn("⚠️ Map already initialized, skipping...");
-          return;
-        }
-
-        map.current = window.L.map(mapContainer.current).setView(
-          [22.9734, 78.6569],
-          5
-        );
-
-        const street = window.L.tileLayer(
-          "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-          {
-            attribution: "© OpenStreetMap contributors",
-            maxZoom: 19,
-          }
-        );
-
-        const satellite = window.L.tileLayer(
-          "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-          {
-            attribution: "Tiles © Esri & others",
-            maxZoom: 19,
-          }
-        );
-
-        // default = street
-        street.addTo(map.current);
-        console.log("✅ Street tile layer added");
-
-        // ⭐ NEW: layer control to switch Street / Satellite
-        const baseLayers = {
-          "Street View": street,
-          "Satellite View": satellite,
-        };
-        window.L.control.layers(baseLayers).addTo(map.current);
-
-        setMapLoaded(true);
-
-        // Load and parse CSV data
-        loadEarthquakeData();
-
-        // Get user's current location
-        if (navigator.geolocation) {
-          console.log("📍 Attempting to get user location...");
-          navigator.geolocation.getCurrentPosition(
-            (position) => {
-              const lat = position.coords.latitude;
-              const lng = position.coords.longitude;
-              const accuracy = position.coords.accuracy;
-              console.log(
-                `✅ Got user location: [${lat}, ${lng}], accuracy: ${accuracy}m`
-              );
-
-              // Add marker at user's location
-              window.L.marker([lat, lng], {
-                icon: window.L.icon({
-                  iconUrl:
-                    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
-                  iconRetinaUrl:
-                    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
-                  shadowUrl:
-                    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
-                  iconSize: [25, 41],
-                  iconAnchor: [12, 41],
-                  popupAnchor: [1, -34],
-                  shadowSize: [41, 41],
-                }),
-              })
-                .addTo(map.current)
-                .bindPopup("<strong>Your Location</strong>");
-
-              if (accuracy && accuracy > 0 && accuracy < 100000) {
-                window.L.circle([lat, lng], {
-                  radius: accuracy,
-                  color: "#2563eb",
-                  fillColor: "#60a5fa",
-                  fillOpacity: 0.25,
-                }).addTo(map.current);
-              }
-            },
-            (error) => {
-              console.error("❌ Geolocation error:", error);
-            }
-          );
-        } else {
-          console.warn("⚠️ Geolocation not supported");
-        }
+        // initialize map once both are loaded
+        initMap();
       };
 
       document.head.appendChild(heatScript);
     };
 
-    document.head.appendChild(script);
+    document.head.appendChild(leafletScript);
 
+    // cleanup: remove map on unmount
     return () => {
-      if (map.current) {
-        console.log("🧹 Cleaning up map instance...");
-        map.current.remove();
-      }
+      try {
+        if (mapRef.current) mapRef.current.remove();
+      } catch (e) {}
     };
+    // run once
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const loadEarthquakeData = async () => {
-    try {
-      console.log("📂 Fetching CSV: /Indian_earthquake_data.csv");
-      const response = await fetch("/Indian_earthquake_data.csv");
-      if (!response.ok) {
-        console.error(`❌ Failed to fetch CSV: ${response.status}`);
-        return;
-      }
-
-      const csvText = await response.text();
-      console.log("✅ CSV fetched successfully. First 200 chars:");
-      console.log(csvText.slice(0, 200));
-
-      // Parse CSV safely
-      const lines = csvText
-        .replace(/^\uFEFF/, "")
-        .trim()
-        .split(/\r?\n/);
-      const headers = lines[0].split(",").map((h) => h.trim());
-      console.log("🧩 Parsed headers:", headers);
-
-      const latIndex = headers.indexOf("Latitude");
-      const lngIndex = headers.indexOf("Longitude");
-      const magIndex = headers.indexOf("Magnitude");
-      const locIndex = headers.indexOf("Location");
-
-      if (latIndex === -1 || lngIndex === -1 || magIndex === -1) {
-        console.error("❌ Required columns not found in CSV!");
-        return;
-      }
-
-      const earthquakeData = [];
-
-      for (let i = 1; i < lines.length; i++) {
-        if (!lines[i].trim()) continue;
-
-        const match = lines[i].match(
-          /^([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),(.*)$/
-        );
-        if (!match) {
-          console.warn(`⚠️ Skipping malformed line ${i + 1}:`, lines[i]);
-          continue;
-        }
-
-        const lat = parseFloat(match[latIndex + 1]);
-        const lng = parseFloat(match[lngIndex + 1]);
-        const mag = parseFloat(match[magIndex + 1]);
-        const location = match[locIndex + 1]?.replace(/^"|"$/g, "").trim();
-
-        if (
-          !isNaN(lat) &&
-          !isNaN(lng) &&
-          !isNaN(mag) &&
-          lat >= -90 &&
-          lat <= 90 &&
-          lng >= -180 &&
-          lng <= 180 &&
-          mag > 0
-        ) {
-          earthquakeData.push({ lat, lng, mag, location });
-        } else {
-          console.warn(
-            `⚠️ Invalid coordinates or magnitude at line ${i + 1}:`,
-            {
-              lat,
-              lng,
-              mag,
-              location,
-            }
-          );
-        }
-      }
-
-      console.log(`📊 Total valid earthquakes: ${earthquakeData.length}`);
-      console.table(earthquakeData.slice(0, 5));
-
-      if (earthquakeData.length === 0) {
-        console.error("❌ No valid earthquake data found");
-        return;
-      }
-
-      // Create heatmap layer
-      const heatPoints = earthquakeData.map((d) => [d.lat, d.lng, d.mag * 0.3]);
-      console.log("🔥 Heatmap points sample:", heatPoints.slice(0, 5));
-
-      if (window.L.heatLayer && map.current) {
-        const initialRadius = getHeatRadius(map.current.getZoom());
-
-        heatLayer.current = window.L.heatLayer(heatPoints, {
-          radius: initialRadius,
-          blur: initialRadius * 0.6,
-          maxZoom: 10,
-          minOpacity: 0.4,
-          gradient: {
-            0.2: "#22c55e",
-            0.4: "#facc15",
-            0.6: "#f97316",
-            0.8: "#ef4444",
-          },
-        }).addTo(map.current);
-        console.log("✅ Heatmap layer added");
-
-        // ⭐ NEW: update heatmap radius when zoom changes
-        map.current.on("zoomend", () => {
-          if (!heatLayer.current || !map.current) return;
-          const z = map.current.getZoom();
-          const r = getHeatRadius(z);
-          if (heatLayer.current.setOptions) {
-            heatLayer.current.setOptions({
-              radius: r,
-              blur: r * 0.6,
-            });
-          }
-        });
-      } else {
-        console.error("❌ Leaflet Heat plugin not loaded");
-      }
-
-      // Add markers for significant earthquakes
-      earthquakeData.forEach((d) => {
-        if (d.mag >= 4.0) {
-          const color = d.mag >= 5.0 ? "#ef4444" : "#f97316";
-          const radius = Math.min(d.mag * 2, 20);
-          window.L.circleMarker([d.lat, d.lng], {
-            radius,
-            color,
-            fillColor: color,
-            fillOpacity: 0.6,
-            weight: 2,
-          }).addTo(map.current).bindPopup(`
-            <div style="font-family: sans-serif; min-width: 200px;">
-              <strong>${d.location}</strong><br/>
-              <strong>Magnitude:</strong> ${d.mag}<br/>
-              <strong>Coordinates:</strong> ${d.lat.toFixed(
-                2
-              )}, ${d.lng.toFixed(2)}
-            </div>
-          `);
-
-          // ⭐ OPTIONAL: trigger shockwave for stronger quakes (demo)
-          // if (d.mag >= 5.0) {
-          //   triggerShockwave(d.lat, d.lng);
-          // }
-        }
-      });
-      console.log("📍 Significant earthquake markers added");
-
-      // Fit map to show all earthquakes
-      const bounds = earthquakeData.map((d) => [d.lat, d.lng]);
-      if (bounds.length > 0 && map.current) {
-        console.log("🧭 Fitting map to bounds...");
-        setTimeout(() => {
-          map.current.fitBounds(bounds, { padding: [50, 50] });
-          console.log("✅ Map view adjusted to earthquake bounds");
-        }, 500);
-      }
-
-      setDataLoaded(true);
-      console.log("✅ Data loaded and visualized successfully");
-    } catch (error) {
-      console.error("💥 Error loading earthquake data:", error);
+  // Initialize the Leaflet map and prepare LayerGroups
+  function initMap() {
+    if (!window.L) {
+      console.error("Leaflet not loaded");
+      return;
     }
-  };
+    if (mapRef.current) return;
+
+    mapRef.current = window.L.map(mapContainerRef.current, {
+      center: [22.9734, 78.6569],
+      zoom: 5,
+      minZoom: 3,
+    });
+
+    const street = window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "© OpenStreetMap contributors",
+      maxZoom: 19,
+    });
+    street.addTo(mapRef.current);
+
+    const satellite = window.L.tileLayer(
+      "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+      { attribution: "Tiles © Esri & others", maxZoom: 19 }
+    );
+
+    // layer control
+    window.L.control.layers({ Street: street, Satellite: satellite }).addTo(mapRef.current);
+
+    // layer groups
+    heatRef.current = null;
+    quakeLayerRef.current = window.L.layerGroup();
+    cycloneRef.current = window.L.layerGroup();
+    floodRef.current = window.L.layerGroup();
+    fireRef.current = window.L.layerGroup();
+
+    setMapLoaded(true);
+
+    // Load datasets (from public/)
+    Promise.all([
+      fetchCSV("/Indian_earthquake_data.csv"),
+      fetchCSV("/cyclone_dataset.csv"),
+      fetchCSV("/flood_risk_dataset_india.csv"),
+      fetchCSV("/forestfires.csv"),
+    ])
+      .then(([eqRows, cyRows, flRows, ffRows]) => {
+        earthquakesRef.current = parseEarthquakeCSV(eqRows);
+        cycloneRefData.current = parseCycloneCSV(cyRows);
+        floodRefData.current = parseLatLngCSV(flRows);
+        fireRefData.current = parseForestFireCSV(ffRows);
+
+        // Don't draw anything initially since all layers are OFF
+        setDataLoaded(true);
+      })
+      .catch((err) => {
+        console.warn("One or more datasets failed to load: ", err);
+        setDataLoaded(true);
+      });
+
+    // Add geolocation marker if available
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          window.L.marker([lat, lng]).addTo(mapRef.current).bindPopup("<strong>Your Location</strong>");
+        },
+        () => {}
+      );
+    }
+  }
+
+  // Simple CSV fetch => returns raw CSV text lines array
+  async function fetchCSV(path) {
+    try {
+      const r = await fetch(path);
+      if (!r.ok) throw new Error("Not found: " + path);
+      const text = await r.text();
+      return text.split(/\r?\n/).filter(Boolean);
+    } catch (e) {
+      return [];
+    }
+  }
+
+  // Parse earthquake CSV robustly
+  function parseEarthquakeCSV(lines) {
+    if (!lines || lines.length === 0) return [];
+    const header = lines[0].split(",").map((h) => h.trim().toLowerCase());
+    const latIdx = header.indexOf("latitude") >= 0 ? header.indexOf("latitude") : 0;
+    const lngIdx = header.indexOf("longitude") >= 0 ? header.indexOf("longitude") : 1;
+    const magIdx = header.indexOf("magnitude") >= 0 ? header.indexOf("magnitude") : 2;
+    const locIdx = header.indexOf("location") >= 0 ? header.indexOf("location") : -1;
+
+    const out = [];
+    for (let i = 1; i < lines.length; i++) {
+      const row = splitCSVLine(lines[i]);
+      const lat = parseFloatSafe(row[latIdx]);
+      const lng = parseFloatSafe(row[lngIdx]);
+      const mag = parseFloatSafe(row[magIdx]);
+      const loc = locIdx >= 0 ? (row[locIdx] || "") : "";
+      if (!isFinite(lat) || !isFinite(lng) || !isFinite(mag)) continue;
+      out.push({ lat, lng, mag, loc });
+    }
+    return out;
+  }
+
+  // Parse cyclone CSV
+  function parseCycloneCSV(lines) {
+    if (!lines || lines.length === 0) return [];
+    const header = lines[0].split(",").map((h) => h.trim().toLowerCase());
+    let latIdx = header.findIndex((h) => h.includes("latitude") || h.includes("lat"));
+    let lngIdx = header.findIndex((h) => h.includes("longitude") || h.includes("lon") || h.includes("lng"));
+    if (latIdx === -1) latIdx = 0;
+    if (lngIdx === -1) lngIdx = 1;
+
+    const coords = [];
+    for (let i = 1; i < lines.length; i++) {
+      const row = splitCSVLine(lines[i]);
+      const lat = parseFloatSafe(row[latIdx]);
+      const lng = parseFloatSafe(row[lngIdx]);
+      if (isFinite(lat) && isFinite(lng)) coords.push([lat, lng]);
+    }
+    return coords;
+  }
+
+  // generic lat/lng parse for flood dataset with STRICT filtering
+  function parseLatLngCSV(lines) {
+    if (!lines || lines.length === 0) return [];
+    const header = lines[0].split(",").map((h) => h.trim().toLowerCase());
+    const latIdx = header.indexOf("latitude") >= 0 ? header.indexOf("latitude") : 0;
+    const lngIdx = header.indexOf("longitude") >= 0 ? header.indexOf("longitude") : 1;
+    
+    // Look for "Flood Occurred" column - only show actual floods
+    const floodOccurredIdx = header.findIndex(h => h.includes("flood") && h.includes("occurred"));
+    
+    const out = [];
+    for (let i = 1; i < lines.length; i++) {
+      const row = splitCSVLine(lines[i]);
+      const lat = parseFloatSafe(row[latIdx]);
+      const lng = parseFloatSafe(row[lngIdx]);
+      
+      // Validate coordinates are within India bounds (approx)
+      if (!isFinite(lat) || !isFinite(lng)) continue;
+      if (lat < 8 || lat > 37 || lng < 68 || lng > 97) continue;
+      
+      // CRITICAL: Only show where actual floods occurred (value = 1)
+      if (floodOccurredIdx >= 0) {
+        const floodOccurred = row[floodOccurredIdx]?.trim();
+        if (floodOccurred !== "1") continue; // Skip if no flood occurred
+      }
+      
+      out.push({ lat, lng });
+    }
+    
+    // Limit to max 200 points for clean visualization
+    return out.length > 200 ? out.slice(0, 200) : out;
+  }
+
+  // parse forestfire csv with filtering
+  function parseForestFireCSV(lines) {
+    if (!lines || lines.length === 0) return [];
+    const header = lines[0].split(",").map((h) => h.trim().toLowerCase());
+    const latIdx = header.indexOf("latitude") >= 0 ? header.indexOf("latitude") : header.indexOf("y") >= 0 ? header.indexOf("y") : 0;
+    const lngIdx = header.indexOf("longitude") >= 0 ? header.indexOf("longitude") : header.indexOf("x") >= 0 ? header.indexOf("x") : 1;
+    
+    const out = [];
+    for (let i = 1; i < lines.length; i++) {
+      const row = splitCSVLine(lines[i]);
+      const lat = parseFloatSafe(row[latIdx]);
+      const lng = parseFloatSafe(row[lngIdx]);
+      
+      // Validate coordinates are within India bounds
+      if (!isFinite(lat) || !isFinite(lng)) continue;
+      if (lat < 8 || lat > 37 || lng < 68 || lng > 97) continue;
+      
+      out.push({ lat, lng });
+    }
+    
+    // Limit to max 300 points
+    return out.length > 300 ? out.slice(0, 300) : out;
+  }
+
+  function splitCSVLine(line) {
+    const parts = [];
+    let cur = "";
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"' || ch === "'") {
+        inQuotes = !inQuotes;
+        continue;
+      }
+      if (ch === "," && !inQuotes) {
+        parts.push(cur);
+        cur = "";
+        continue;
+      }
+      cur += ch;
+    }
+    parts.push(cur);
+    return parts.map((p) => p.trim());
+  }
+
+  function parseFloatSafe(v) {
+    const n = parseFloat(v);
+    return isNaN(n) ? NaN : n;
+  }
+
+  // draw cyclone (polyline)
+  function drawCyclone() {
+    if (!mapRef.current) return;
+    if (cycloneRef.current) cycloneRef.current.clearLayers();
+
+    const coords = cycloneRefData.current.length ? cycloneRefData.current : [
+      [19.5, 85.7],
+      [18.2, 86.8],
+      [17.4, 84.3],
+    ];
+
+    const poly = window.L.polyline(coords, {
+      color: "orange",
+      weight: 4,
+      dashArray: "6 4",
+      opacity: 0.9,
+    });
+
+    cycloneRef.current.addLayer(poly);
+    if (showCyclone) cycloneRef.current.addTo(mapRef.current);
+    else cycloneRef.current.remove();
+  }
+
+  // draw flood rectangles - larger, more visible
+  function drawFlood() {
+    if (!mapRef.current) return;
+    floodRef.current.clearLayers();
+
+    const sizeDeg = 0.15; // Larger size for better visibility
+    const points = floodRefData.current || [];
+    
+    points.forEach((r, idx) => {
+      const lat = r.lat;
+      const lng = r.lng;
+      if (!isFinite(lat) || !isFinite(lng)) return;
+      
+      const bounds = [
+        [lat - sizeDeg, lng - sizeDeg],
+        [lat + sizeDeg, lng + sizeDeg],
+      ];
+      const rect = window.L.rectangle(bounds, {
+        color: "#3b82f6",
+        weight: 2.5,
+        fillColor: "#60a5fa",
+        fillOpacity: 0.15,
+        dashArray: "5 5",
+      }).bindPopup(`<strong>Flood Zone ${idx + 1}</strong><br/>Lat: ${lat.toFixed(3)}, Lng: ${lng.toFixed(3)}`);
+      
+      floodRef.current.addLayer(rect);
+    });
+
+    if (showFlood) floodRef.current.addTo(mapRef.current);
+    else floodRef.current.remove();
+  }
+
+  // draw fire square rings - larger, more visible
+  function drawFire() {
+    if (!mapRef.current) return;
+    fireRef.current.clearLayers();
+
+    const sizeDeg = 0.15; // Larger size
+    const points = fireRefData.current || [];
+    
+    points.forEach((r, idx) => {
+      const lat = r.lat;
+      const lng = r.lng;
+      if (!isFinite(lat) || !isFinite(lng)) return;
+      
+      const bounds = [
+        [lat - sizeDeg, lng - sizeDeg],
+        [lat - sizeDeg, lng + sizeDeg],
+        [lat + sizeDeg, lng + sizeDeg],
+        [lat + sizeDeg, lng - sizeDeg],
+      ];
+      const poly = window.L.polygon(bounds, {
+        color: "#f97316",
+        weight: 2.5,
+        fillColor: "#fb923c",
+        fillOpacity: 0.15,
+        dashArray: "6 4",
+      }).bindPopup(`<strong>Forest Fire Zone ${idx + 1}</strong><br/>Lat: ${lat.toFixed(3)}, Lng: ${lng.toFixed(3)}`);
+      
+      fireRef.current.addLayer(poly);
+    });
+
+    if (showFire) fireRef.current.addTo(mapRef.current);
+    else fireRef.current.remove();
+  }
+
+  // draw quake circles & heatmap
+  function drawEarthquakes() {
+    if (!mapRef.current) return;
+
+    quakeLayerRef.current.clearLayers();
+    try {
+      if (heatRef.current && heatRef.current.remove) {
+        mapRef.current.removeLayer(heatRef.current);
+        heatRef.current = null;
+      }
+    } catch (e) {}
+
+    const data = earthquakesRef.current || [];
+    if (data.length === 0) return;
+
+    // Heatmap: only if enabled
+    if (showHeatmap && window.L && window.L.heatLayer) {
+      const points = data.map((d) => [d.lat, d.lng, Math.max(0.1, d.mag * 0.25)]);
+      heatRef.current = window.L.heatLayer(points, {
+        radius: 25,
+        blur: 20,
+        maxZoom: 11,
+        minOpacity: 0.25,
+        gradient: {
+          0.2: "#dbeeff",
+          0.4: "#94c9ff",
+          0.6: "#57b0ff",
+          0.8: "#1a8cff",
+          1.0: "#005bb5",
+        },
+      }).addTo(mapRef.current);
+    }
+
+    // Earthquake circles: only if enabled
+    if (showQuakes) {
+      data.forEach((d) => {
+        if (!isFinite(d.mag)) return;
+        if (d.mag < magThreshold) return;
+        const color = d.mag >= 6 ? "#ef4444" : d.mag >= 5 ? "#fb923c" : d.mag >= 4 ? "#f59e0b" : "#10b981";
+        const radius = Math.min(20, 3 + d.mag * 2.5);
+        const cm = window.L.circleMarker([d.lat, d.lng], {
+          radius,
+          color,
+          weight: 1.4,
+          fillOpacity: 0.55,
+        }).bindPopup(
+          `<div style="font-family: sans-serif; min-width:160px;"><strong>${d.loc || "Unknown"}</strong><br/>Magnitude: ${d.mag}<br/>Coords: ${d.lat.toFixed(
+            3
+          )}, ${d.lng.toFixed(3)}</div>`
+        );
+        quakeLayerRef.current.addLayer(cm);
+      });
+      quakeLayerRef.current.addTo(mapRef.current);
+    } else {
+      quakeLayerRef.current.remove();
+    }
+  }
+
+  // Redraw layers when toggles change
+  useEffect(() => {
+    if (mapLoaded && dataLoaded) drawCyclone();
+  }, [showCyclone, mapLoaded, dataLoaded]);
+
+  useEffect(() => {
+    if (mapLoaded && dataLoaded) drawFlood();
+  }, [showFlood, mapLoaded, dataLoaded]);
+
+  useEffect(() => {
+    if (mapLoaded && dataLoaded) drawFire();
+  }, [showFire, mapLoaded, dataLoaded]);
+
+  useEffect(() => {
+    if (mapLoaded && dataLoaded) drawEarthquakes();
+  }, [showHeatmap, showQuakes, magThreshold, mapLoaded, dataLoaded]);
 
   return (
     <div className="bg-white p-6 rounded-2xl shadow-lg">
       <div className="flex items-center justify-between mb-4">
-        <div className="text-xl font-semibold">Earthquake Risk Heatmap</div>
-        {dataLoaded && (
-          <div className="text-sm text-green-600 font-medium">
-            ✓ Data Loaded
-          </div>
-        )}
+        <div className="text-xl font-semibold">Earthquake &amp; Disaster Map</div>
+        {dataLoaded && <div className="text-sm text-green-600 font-medium">✓ Data Loaded</div>}
       </div>
 
-      <div className="relative h-[500px] w-full rounded-xl overflow-hidden border border-gray-200">
-        <div ref={mapContainer} className="w-full h-full" />
-        {!mapLoaded && (
-          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-tr from-indigo-100 to-sky-50 text-gray-600">
-            🗺️ Loading Map...
-          </div>
-        )}
-      </div>
+      <div className="flex gap-6">
+        <div style={{ width: 360 }}>
+          <div className="p-4 rounded-lg border">
+            <h3 className="font-semibold mb-2">Earthquake Markers</h3>
+            <div className="text-sm text-gray-600 mb-3">
+              <strong>Magnitude intensity:</strong> Low &lt; 4, Moderate 4–5, High 5–6, Critical &gt; 6
+            </div>
 
-      <div className="mt-4 flex gap-4 flex-wrap">
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-sm bg-green-500" /> Low Risk
+            <label className="flex items-center gap-3 mb-2">
+              <input type="checkbox" checked={showQuakes} onChange={() => setShowQuakes((s) => !s)} />
+              <span>Earthquake Circles</span>
+            </label>
+
+            <div className="mb-2">
+              <label className="block text-sm">Magnitude threshold (show circles for mag ≥)</label>
+              <input
+                type="range"
+                min="0"
+                max="8"
+                step="0.1"
+                value={magThreshold}
+                onChange={(e) => setMagThreshold(parseFloat(e.target.value))}
+              />
+              <div className="text-xs text-gray-600">{magThreshold.toFixed(1)}</div>
+            </div>
+
+            <label className="flex items-center gap-3 mb-2">
+              <input type="checkbox" checked={showHeatmap} onChange={() => setShowHeatmap((s) => !s)} />
+              <span>Heatmap</span>
+            </label>
+
+            <hr className="my-3" />
+
+            <label className="flex items-center gap-3 mb-2">
+              <input type="checkbox" checked={showCyclone} onChange={() => setShowCyclone((s) => !s)} />
+              <span>Cyclone Path</span>
+            </label>
+            <label className="flex items-center gap-3 mb-2">
+              <input type="checkbox" checked={showFlood} onChange={() => setShowFlood((s) => !s)} />
+              <span>Flood Zones</span>
+            </label>
+            <label className="flex items-center gap-3 mb-2">
+              <input type="checkbox" checked={showFire} onChange={() => setShowFire((s) => !s)} />
+              <span>Forest Fire Rings</span>
+            </label>
+
+            <p className="text-sm text-gray-500 mt-3">All layers are OFF by default. Toggle ON to view each disaster layer individually. Flood zones show only areas where floods actually occurred.</p>
+          </div>
+
+          <div className="p-4 rounded-lg border mt-4">
+            <h4 className="font-semibold mb-2">Legend</h4>
+            <div className="flex items-center gap-3 mb-2"><div style={{ width: 14, height: 14, background: '#10b981', borderRadius: 999 }} /> Low Risk</div>
+            <div className="flex items-center gap-3 mb-2"><div style={{ width: 14, height: 14, background: '#f59e0b', borderRadius: 999 }} /> Moderate Risk</div>
+            <div className="flex items-center gap-3 mb-2"><div style={{ width: 14, height: 14, background: '#fb923c', borderRadius: 999 }} /> High Risk</div>
+            <div className="flex items-center gap-3 mb-2"><div style={{ width: 14, height: 14, background: '#ef4444', borderRadius: 999 }} /> Critical Risk</div>
+            <div className="flex items-center gap-3 mb-2"><div style={{ width: 14, height: 14, background: '#fbbf24' }} /> Forest fire (square ring)</div>
+            <div className="flex items-center gap-3 mb-2"><div style={{ width: 14, height: 14, background: '#60a5fa' }} /> Flood (rectangle ring)</div>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-sm bg-yellow-400" /> Moderate Risk
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-sm bg-orange-500" /> High Risk
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-sm bg-red-500" /> Critical Risk
+
+        <div style={{ flex: 1 }}>
+          <div className="relative h-[600px] w-full rounded-xl overflow-hidden border border-gray-200">
+            <div ref={mapContainerRef} id="map" className="w-full h-full" />
+            {!mapLoaded && (
+              <div className="absolute inset-0 flex items-center justify-center text-gray-600">🗺️ Loading map...</div>
+            )}
+          </div>
         </div>
       </div>
     </div>
