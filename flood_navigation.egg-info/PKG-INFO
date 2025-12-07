@@ -1,0 +1,6 @@
+Metadata-Version: 2.4
+Name: flood-navigation
+Version: 0.1.0
+Summary: Flood Route Safety Navigator
+Requires-Python: >=3.8
+Dynamic: requires-python

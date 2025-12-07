@@ -1,0 +1,93 @@
+================================================================================
+FLOOD ROUTE SAFETY NAVIGATOR - COMMAND REFERENCE
+================================================================================
+================================================================================
+STEP 1: INITIAL SETUP (Run once)
+================================================================================
+
+1. Create virtual environment:
+   python -m venv venv
+
+2. Activate virtual environment (Windows):
+   .\venv\Scripts\activate
+
+3. Upgrade pip:
+   python -m pip install --upgrade pip
+
+4. Install package in development mode:
+   pip install -e .
+
+5. Install core dependencies:
+   pip install pydantic==2.5.0 pydantic-settings==2.1.0 scipy==1.11.4 scikit-learn==1.3.2 joblib==1.3.2 openai==1.3.3 groq==0.4.2 python-dotenv==1.0.0 requests==2.31.0 pandas==2.1.1
+
+================================================================================
+STEP 2: DATA PREPROCESSING (Run once before starting server)
+================================================================================
+
+NOTE: All scripts work when venv is activated. After activating venv,
+you can use 'python' directly instead of '.\venv\Scripts\python.exe'
+
+1. Preprocess elevation/slope/river grids:
+   python scripts/preprocess_grids.py
+
+2. Download OSM road data (optional):
+   python scripts/download_osm.py
+
+3. Download forecast data (optional):
+   python scripts/download_forecast.py
+
+4. Train ML model:
+   python ml/train_model.py
+
+================================================================================
+STEP 3: RUNNING THE API SERVER
+================================================================================
+
+1. Activate virtual environment:
+   .\venv\Scripts\activate
+
+2. Start the API server on default port 8000:
+   uvicorn main:app --reload
+
+   Server will be available at:
+   - API: http://localhost:8000
+   - Interactive docs: http://localhost:8000/docs
+   - ReDoc: http://localhost:8000/redoc
+
+================================================================================
+STEP 5: ENVIRONMENT VARIABLES (Optional)
+================================================================================
+
+For LLM-based advisories, set one of these before running the server:
+
+Windows PowerShell:
+  $env:OPENAI_API_KEY="sk-..."
+  
+Or use Groq:
+  $env:GROQ_API_KEY="gsk-..."
+  $env:USE_GROQ="true"
+
+================================================================================
+QUICK START (Complete setup from scratch)
+================================================================================
+
+# Create and activate venv
+python -m venv venv
+.\venv\Scripts\activate
+
+# Install dependencies
+python -m pip install --upgrade pip
+pip install -e .
+pip install pydantic==2.5.0 pydantic-settings==2.1.0 scipy==1.11.4 scikit-learn==1.3.2 joblib==1.3.2 openai==1.3.3 groq==0.4.2 python-dotenv==1.0.0 requests==2.31.0 pandas==2.1.1
+
+# Preprocess data and train model
+python scripts/preprocess_grids.py
+python ml/train_model.py
+
+# Start API server
+uvicorn main:app --reload
+
+# In another terminal, test the API
+curl http://localhost:8000/health
+
+================================================================================

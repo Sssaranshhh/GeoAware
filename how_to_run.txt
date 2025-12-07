@@ -1,0 +1,166 @@
+FLOOD ROUTE SAFETY NAVIGATOR - HOW TO RUN
+==========================================
+
+Quick Start Guide
+-----------------
+
+STEP 1: Setup Python Environment
+  a) Create virtual environment
+     $ python -m venv venv
+  
+  b) Activate (Windows)
+     $ venv\Scripts\activate
+  
+  c) Activate (macOS/Linux)
+     $ source venv/bin/activate
+
+
+STEP 2: Install Dependencies
+  $ pip install -r requirements.txt
+
+
+STEP 3: Preprocess Data
+  a) Create elevation/slope/river grids
+     $ python scripts/preprocess_grids.py
+  
+  b) Download OSM road data (optional)
+     $ python scripts/download_osm.py
+  
+  c) Train ML model
+     $ python ml/train_model.py
+
+
+STEP 4: Start API Server
+  $ uvicorn main:app --reload
+  
+  Server will start at: http://localhost:8000
+
+
+STEP 5: Test the API
+
+  a) Health check (should return "ok")
+     $ curl http://localhost:8000/health
+  
+  b) Compute safe route
+     $ curl -X POST http://localhost:8000/route/safe \
+       -H "Content-Type: application/json" \
+       -d '{
+         "origin_lat": 20.5937,
+         "origin_lon": 72.9629,
+         "dest_lat": 20.6845,
+         "dest_lon": 73.0524,
+         "time_horizon": "now",
+         "include_alternatives": false
+       }'
+  
+  c) View interactive API docs
+     Open browser: http://localhost:8000/docs
+
+
+STEP 6: Configure (Optional)
+
+  Set API keys for LLM advisories:
+  
+  Windows:
+    $ $env:OPENAI_API_KEY="sk-..."
+  
+  macOS/Linux:
+    $ export OPENAI_API_KEY="sk-..."
+  
+  Or use Groq:
+    $ export GROQ_API_KEY="gsk-..."
+    $ export USE_GROQ="true"
+
+
+File Structure
+--------------
+flood_navigation/
+  ├── main.py                    # FastAPI app
+  ├── config.py                  # Configuration
+  ├── api/routes.py              # /route/safe endpoint
+  ├── ml/train_model.py          # Train flood classifier
+  ├── routing/pathfinder.py      # A* pathfinding
+  ├── hazard/hazard_layer.py     # Compute hazard scores
+  ├── scripts/preprocess_grids.py # Create grid data
+  └── models/                    # Saved ML models
+
+
+Key Endpoints
+-------------
+GET  /health                     # Health check
+POST /route/safe                 # Compute flood-aware route
+GET  /docs                       # Interactive API docs
+
+
+API Request Example
+-------------------
+POST /route/safe
+
+{
+  "origin_lat": 20.5937,
+  "origin_lon": 72.9629,
+  "dest_lat": 20.6845,
+  "dest_lon": 73.0524,
+  "time_horizon": "now"
+}
+
+Time horizon options: "now", "24h", "48h"
+
+
+API Response Example
+--------------------
+{
+  "status": "SUCCESS",
+  "primary_route": {
+    "route": [[20.5937, 72.9629], [20.6000, 72.9700], ...],
+    "distance_km": 12.5,
+    "eta_minutes": 25,
+    "hazard_exposure": 0.35,
+    "max_hazard": 0.50,
+    "mean_hazard": 0.32,
+    "advisory": "Route conditions are favorable...",
+    "efficiency_class": "GOOD"
+  },
+  "metadata": {...}
+}
+
+
+Troubleshooting
+---------------
+
+Q: "No such file: models/flood_risk_model.pkl"
+A: Run: python ml/train_model.py
+
+Q: "Graph not found"
+A: Run: python scripts/preprocess_grids.py
+
+Q: "LLM advisory is generic (fallback mode)"
+A: Set OPENAI_API_KEY or GROQ_API_KEY environment variable
+
+Q: Server won't start on port 8000
+A: Change port: uvicorn main:app --port 8001
+
+Q: Performance too slow
+A: Reduce graph size or increase hazard weight in config.py
+
+
+Production Deployment
+---------------------
+
+1. Use production ASGI server:
+   $ gunicorn -w 4 -k uvicorn.workers.UvicornWorker main:app
+
+2. Set environment variables:
+   export OPENAI_API_KEY="sk-..."
+   export HOST="0.0.0.0"
+   export PORT="8000"
+   export DEBUG="false"
+
+3. Use Docker:
+   $ docker build -t flood-navigator .
+   $ docker run -p 8000:8000 flood-navigator
+
+
+More Information
+----------------
+See README.md for full documentation, architecture details, and configuration options.
