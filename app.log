@@ -1,0 +1,24 @@
+2025-12-03 11:41:39,131 | INFO | Processing full weather request lat=28.7041, lon=77.1025
+2025-12-03 11:41:39,131 | INFO | Fetching Open-Meteo weather for lat=28.7041, lon=77.1025
+2025-12-03 11:41:39,982 | INFO | Successfully fetched weather data.
+2025-12-03 11:41:39,983 | INFO | Generating insights via Groq...
+2025-12-03 11:41:40,157 | INFO | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2025-12-03 11:41:40,158 | ERROR | Groq generation error: Error code: 400 - {'error': {'message': 'The model `llama3-8b-8192` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}
+2025-12-03 11:41:40,159 | ERROR | PROCESS FAILED: Error code: 400 - {'error': {'message': 'The model `llama3-8b-8192` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}
+2025-12-03 11:42:23,011 | INFO | Processing full weather request lat=28.7041, lon=77.1025
+2025-12-03 11:42:23,012 | INFO | Fetching Open-Meteo weather for lat=28.7041, lon=77.1025
+2025-12-03 11:42:23,020 | INFO | Successfully fetched weather data.
+2025-12-03 11:42:23,021 | INFO | Generating insights via Groq...
+2025-12-03 11:42:33,346 | INFO | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-03 11:42:33,351 | INFO | Groq insights generated successfully.
+2025-12-03 11:42:33,351 | INFO | Combined weather + AI insights.
+2025-12-03 11:42:33,409 | INFO | Stored document in MongoDB with id: 692fd4d13b4f25167f245847
+2025-12-03 11:52:20,333 | INFO | Connected to MongoDB successfully.
+2025-12-03 11:52:38,652 | INFO | PROCESS REQUEST START | lat=30.7046, lon=76.7179
+2025-12-03 11:52:38,652 | INFO | Fetching Open-Meteo weather for lat=30.7046, lon=76.7179
+2025-12-03 11:52:39,468 | INFO | Weather data fetched successfully.
+2025-12-03 11:52:39,469 | INFO | Generating Groq insights...
+2025-12-03 11:52:46,626 | INFO | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-03 11:52:46,628 | INFO | Groq insights generated successfully.
+2025-12-03 11:52:46,631 | INFO | Stored document in MongoDB | id=692fd736e8fb304ccc7e6920
+2025-12-03 11:52:46,632 | INFO | PROCESS REQUEST COMPLETE

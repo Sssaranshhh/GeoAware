@@ -1,0 +1,311 @@
+saransh ye teri env file hn 
+# GeoAware Air Quality Service Configuration
+
+# Groq API Configuration
+GROQ_API_KEY="apni api key lga le"
+
+# Service Configuration
+SERVICE_HOST=0.0.0.0
+SERVICE_PORT=8000
+
+# ML Configuration
+MODEL_DIR=models
+TRAINING_SAMPLES=1000
+
+# Logging
+LOG_LEVEL=INFO
+
+
+═══════════════════════════════════════════════════════════════════════════════
+                    GEOAWARE AIR QUALITY API - COMMANDS
+═══════════════════════════════════════════════════════════════════════════════
+
+BASE URL: http://localhost:8000
+
+═══════════════════════════════════════════════════════════════════════════════
+                         START/STOP SERVER
+═══════════════════════════════════════════════════════════════════════════════
+
+# Start server with auto-reload (development)
+cd c:\Users\bhati\OneDrive\Desktop\GeoAware_NEW\air_quality
+venv\Scripts\python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
+
+# Start server without auto-reload (production)
+venv\Scripts\python -m uvicorn main:app --host 0.0.0.0 --port 8000
+
+# Stop server
+Press CTRL+C
+
+═══════════════════════════════════════════════════════════════════════════════
+                       1. HEALTH CHECK ENDPOINT
+═══════════════════════════════════════════════════════════════════════════════
+
+GET /health
+
+Description: Check if API and ML models are running
+
+Command:
+curl -X GET http://localhost:8000/health
+
+Expected Response:
+{
+  "status": "healthy",
+  "timestamp": "2025-12-07T10:30:45.123456"
+}
+
+═══════════════════════════════════════════════════════════════════════════════
+                    2. ANALYZE SINGLE LOCATION
+═══════════════════════════════════════════════════════════════════════════════
+
+POST /analyze/location
+
+Description: Get air quality analysis for a single point with AQI data, AI insights, 
+             and ML predictions
+
+Command (PowerShell):
+$body = @{
+    latitude = 28.6139
+    longitude = 77.2090
+} | ConvertTo-Json
+
+curl -X POST http://localhost:8000/analyze/location `
+  -H "Content-Type: application/json" `
+  -d $body
+
+Command (Bash/CMD):
+curl -X POST http://localhost:8000/analyze/location ^
+  -H "Content-Type: application/json" ^
+  -d "{\"latitude\": 28.6139, \"longitude\": 77.2090}"
+
+Example Locations:
+- Delhi: 28.6139, 77.2090
+- Mumbai: 19.0760, 72.8777
+- Bangalore: 12.9716, 77.5946
+
+═══════════════════════════════════════════════════════════════════════════════
+                      3. ANALYZE ROUTE/POLYLINE
+═══════════════════════════════════════════════════════════════════════════════
+
+POST /analyze/route
+
+Description: Get air quality analysis for a route with multiple waypoints,
+             segment-by-segment analysis and overall hazard level
+
+Command (PowerShell):
+$body = @{
+    points = @(
+        @{ latitude = 28.6139; longitude = 77.2090; order = 0 },
+        @{ latitude = 28.6200; longitude = 77.2150; order = 1 },
+        @{ latitude = 28.6250; longitude = 77.2200; order = 2 }
+    )
+    snap_to_roads = $false
+} | ConvertTo-Json
+
+curl -X POST http://localhost:8000/analyze/route `
+  -H "Content-Type: application/json" `
+  -d $body
+
+Command (Bash/CMD):
+curl -X POST http://localhost:8000/analyze/route ^
+  -H "Content-Type: application/json" ^
+  -d "{\"points\": [{\"latitude\": 28.6139, \"longitude\": 77.2090, \"order\": 0}, {\"latitude\": 28.6200, \"longitude\": 77.2150, \"order\": 1}], \"snap_to_roads\": false}"
+
+═══════════════════════════════════════════════════════════════════════════════
+                      4. GET ML MODEL STATUS
+═══════════════════════════════════════════════════════════════════════════════
+
+GET /models/status
+
+Description: Check which ML models are loaded and initialized
+
+Command:
+curl -X GET http://localhost:8000/models/status
+
+Expected Response:
+{
+  "ml_initialized": true,
+  "models": [
+    "pm10_model",
+    "pm2_5_model",
+    "carbon_monoxide_model",
+    "nitrogen_dioxide_model",
+    "ozone_model"
+  ],
+  "timestamp": "2025-12-07T10:30:45.123456"
+}
+
+═══════════════════════════════════════════════════════════════════════════════
+                    5. TRAIN ML MODELS (BACKGROUND TASK)
+═══════════════════════════════════════════════════════════════════════════════
+
+POST /models/train
+
+Description: Train ML models with custom number of samples (runs in background)
+
+Command:
+curl -X POST "http://localhost:8000/models/train?n_samples=1000"
+
+Query Parameters:
+- n_samples: Number of synthetic training samples (default: 1000)
+
+Expected Response:
+{
+  "status": "training_started",
+  "samples": 1000,
+  "timestamp": "2025-12-07T10:30:45.123456"
+}
+
+Training Duration: ~30 seconds for 1000 samples
+
+═══════════════════════════════════════════════════════════════════════════════
+                    6. API DOCUMENTATION (SWAGGER UI)
+═══════════════════════════════════════════════════════════════════════════════
+
+Interactive API Documentation:
+http://localhost:8000/docs
+
+Features:
+- View all endpoints
+- See request/response schemas
+- Test endpoints directly
+- Try example values
+
+═══════════════════════════════════════════════════════════════════════════════
+                          INSTALL DEPENDENCIES
+═══════════════════════════════════════════════════════════════════════════════
+
+# Activate virtual environment
+cd c:\Users\bhati\OneDrive\Desktop\GeoAware_NEW\air_quality
+venv\Scripts\Activate.ps1
+
+# Install from requirements.txt
+pip install -r requirements.txt
+
+# Verify installation
+pip list
+
+═══════════════════════════════════════════════════════════════════════════════
+                         PYTHON SYNTAX CHECK
+═══════════════════════════════════════════════════════════════════════════════
+
+Check all Python files for syntax errors:
+python -m py_compile main.py service.py models.py ml_pipeline.py ^
+                       spatial_utils.py config.py air_quality_client.py groq_client.py
+
+═══════════════════════════════════════════════════════════════════════════════
+                           TROUBLESHOOTING
+═══════════════════════════════════════════════════════════════════════════════
+
+Issue: "ModuleNotFoundError: No module named 'X'"
+Solution: Activate venv and install requirements
+  venv\Scripts\Activate.ps1
+  pip install -r requirements.txt
+
+Issue: "Address already in use" (port 8000 taken)
+Solution: Change port in command
+  venv\Scripts\python -m uvicorn main:app --host 0.0.0.0 --port 8001
+
+Issue: ML models not loading
+Solution: Train new models
+  curl -X POST "http://localhost:8000/models/train?n_samples=500"
+
+Issue: Groq API key not working
+Solution: Update .env file with valid API key
+  Edit .env and set: GROQ_API_KEY=your_actual_key
+
+═══════════════════════════════════════════════════════════════════════════════
+                            FILE STRUCTURE
+═══════════════════════════════════════════════════════════════════════════════
+
+air_quality/
+├── main.py                    # FastAPI application entry point
+├── service.py                 # Business logic layer (EnhancedAQIService)
+├── models.py                  # Pydantic data models
+├── ml_pipeline.py             # ML pipeline implementation
+├── spatial_utils.py           # Geographic calculations
+├── air_quality_client.py      # Open-Meteo API client
+├── groq_client.py             # Groq AI client
+├── config.py                  # Configuration management
+├── requirements.txt           # Python dependencies
+├── .env                       # Environment variables
+├── .env.example               # Environment template
+├── models/                    # Trained ML models (auto-created)
+│   └── v1.0_TIMESTAMP/
+│       ├── pm10_model.pkl
+│       ├── pm2_5_model.pkl
+│       ├── carbon_monoxide_model.pkl
+│       ├── nitrogen_dioxide_model.pkl
+│       ├── ozone_model.pkl
+│       └── scaler.pkl
+└── venv/                      # Virtual environment
+
+═══════════════════════════════════════════════════════════════════════════════
+                          API RESPONSE STRUCTURE
+═══════════════════════════════════════════════════════════════════════════════
+
+Location Analysis Response:
+{
+  "location_or_route": "location",
+  "data": {
+    "coordinates": {"latitude": 28.6139, "longitude": 77.2090},
+    "aqi_data": {
+      "time": [...hourly times...],
+      "pm10": [...values...],
+      "pm2_5": [...values...],
+      "carbon_monoxide": [...values...],
+      "nitrogen_dioxide": [...values...],
+      "sulphur_dioxide": [...values...],
+      "ozone": [...values...],
+      "us_aqi": [...values...]
+    },
+    "ai_insights": {
+      "precautions": "string",
+      "risk_level": "Low|Moderate|High|Severe|Critical",
+      "best_time_to_go_out": "string",
+      "summary": "string"
+    },
+    "ml_predictions": {
+      "pm10": float,
+      "pm2_5": float,
+      "carbon_monoxide": float,
+      "nitrogen_dioxide": float,
+      "ozone": float,
+      "us_aqi": int
+    },
+    "timestamp": "ISO8601 datetime"
+  }
+}
+
+═══════════════════════════════════════════════════════════════════════════════
+                        QUICK TEST SEQUENCE
+═══════════════════════════════════════════════════════════════════════════════
+
+1. Start Server:
+   venv\Scripts\python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
+
+2. Check Health (in new terminal):
+   curl -X GET http://localhost:8000/health
+
+3. Test Location Analysis:
+   curl -X POST http://localhost:8000/analyze/location ^
+     -H "Content-Type: application/json" ^
+     -d "{\"latitude\": 28.6139, \"longitude\": 77.2090}"
+
+4. Check Model Status:
+   curl -X GET http://localhost:8000/models/status
+
+5. Open Swagger UI:
+   Open browser to http://localhost:8000/docs
+
+═══════════════════════════════════════════════════════════════════════════════
+                             SUCCESS INDICATORS
+═══════════════════════════════════════════════════════════════════════════════
+
+✓ Server shows: "Uvicorn running on http://0.0.0.0:8000"
+✓ ML models message: "ML models initialized successfully"
+✓ No error messages in console
+✓ Can access http://localhost:8000/docs
+✓ Swagger UI loads with all 6 endpoints
+✓ Health check returns status: "healthy"
+
+═══════════════════════════════════════════════════════════════════════════════

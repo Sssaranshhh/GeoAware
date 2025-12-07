@@ -1,0 +1,743 @@
+{
+  "api_documentation": {
+    "base_url": "http://localhost:8000",
+    "version": "1.0.0",
+    "total_endpoints": 6,
+    "endpoints": {
+      "1_health_check": {
+        "name": "Health Check",
+        "method": "GET",
+        "url": "/health",
+        "description": "Check if API and ML models are running and initialized",
+        "purpose": "Verify service status and availability",
+        "input": {
+          "type": "None",
+          "body": "No request body needed",
+          "query_parameters": "None"
+        },
+        "output": {
+          "status_code": 200,
+          "content_type": "application/json",
+          "schema": {
+            "status": {
+              "type": "string",
+              "description": "Service status: 'healthy' or 'degraded'",
+              "example": "healthy"
+            },
+            "timestamp": {
+              "type": "string",
+              "description": "ISO 8601 timestamp when response was generated",
+              "example": "2025-12-07T10:30:45.123456"
+            }
+          },
+          "example_response": {
+            "status": "healthy",
+            "timestamp": "2025-12-07T10:30:45.123456"
+          }
+        },
+        "curl_example": "curl -X GET http://localhost:8000/health",
+        "use_case": "Monitor API availability before making requests"
+      },
+      "2_analyze_location": {
+        "name": "Analyze Single Location",
+        "method": "POST",
+        "url": "/analyze/location",
+        "description": "Get comprehensive air quality analysis for a single geographic point",
+        "purpose": "Fetch real AQI data, generate AI health insights, and predict pollutant concentrations using ML models",
+        "input": {
+          "type": "JSON",
+          "content_type": "application/json",
+          "body": {
+            "latitude": {
+              "type": "float",
+              "description": "Geographic latitude (-90 to 90)",
+              "required": true,
+              "example": 28.6139,
+              "range": [-90, 90]
+            },
+            "longitude": {
+              "type": "float",
+              "description": "Geographic longitude (-180 to 180)",
+              "required": true,
+              "example": 77.2090,
+              "range": [-180, 180]
+            }
+          },
+          "example_input": {
+            "latitude": 28.6139,
+            "longitude": 77.2090
+          },
+          "test_locations": [
+            {
+              "name": "Delhi, India",
+              "latitude": 28.6139,
+              "longitude": 77.2090
+            },
+            {
+              "name": "Mumbai, India",
+              "latitude": 19.0760,
+              "longitude": 72.8777
+            },
+            {
+              "name": "Bangalore, India",
+              "latitude": 12.9716,
+              "longitude": 77.5946
+            }
+          ]
+        },
+        "output": {
+          "status_code": 200,
+          "content_type": "application/json",
+          "schema": {
+            "location_or_route": {
+              "type": "string",
+              "value": "location"
+            },
+            "data": {
+              "type": "object",
+              "properties": {
+                "coordinates": {
+                  "type": "object",
+                  "properties": {
+                    "latitude": {
+                      "type": "float",
+                      "description": "Input latitude"
+                    },
+                    "longitude": {
+                      "type": "float",
+                      "description": "Input longitude"
+                    }
+                  }
+                },
+                "aqi_data": {
+                  "type": "object",
+                  "description": "Real air quality data from Open-Meteo API (hourly)",
+                  "properties": {
+                    "time": {
+                      "type": "array",
+                      "description": "Array of hourly timestamps (24 entries)",
+                      "example": ["2025-12-07T00:00", "2025-12-07T01:00"]
+                    },
+                    "pm10": {
+                      "type": "array",
+                      "description": "PM10 concentration in µg/m³ (24 hourly values)",
+                      "example": [45.2, 48.5, 52.1]
+                    },
+                    "pm2_5": {
+                      "type": "array",
+                      "description": "PM2.5 (fine particulate) in µg/m³ (24 hourly values)",
+                      "example": [25.1, 27.3, 30.2]
+                    },
+                    "carbon_monoxide": {
+                      "type": "array",
+                      "description": "CO concentration in µg/m³ (24 hourly values)",
+                      "example": [120.5, 125.3, 135.2]
+                    },
+                    "nitrogen_dioxide": {
+                      "type": "array",
+                      "description": "NO₂ concentration in µg/m³ (24 hourly values)",
+                      "example": [35.2, 38.1, 42.1]
+                    },
+                    "sulphur_dioxide": {
+                      "type": "array",
+                      "description": "SO₂ concentration in µg/m³ (24 hourly values)",
+                      "example": [12.3, 11.5, 13.2]
+                    },
+                    "ozone": {
+                      "type": "array",
+                      "description": "O₃ concentration in µg/m³ (24 hourly values)",
+                      "example": [45.6, 48.2, 51.8]
+                    },
+                    "us_aqi": {
+                      "type": "array",
+                      "description": "US AQI scale (0-500+) (24 hourly values)",
+                      "example": [65, 68, 75]
+                    }
+                  }
+                },
+                "ai_insights": {
+                  "type": "object",
+                  "description": "Health insights generated by Groq AI",
+                  "properties": {
+                    "precautions": {
+                      "type": "string",
+                      "description": "Health precautions to take",
+                      "example": "Avoid outdoor activities, wear N95 mask"
+                    },
+                    "risk_level": {
+                      "type": "string",
+                      "enum": ["Low", "Moderate", "High", "Severe", "Critical"],
+                      "description": "Overall health risk level",
+                      "example": "Moderate"
+                    },
+                    "best_time_to_go_out": {
+                      "type": "string",
+                      "description": "Recommended time for outdoor activities",
+                      "example": "Early morning (6-8 AM)"
+                    },
+                    "summary": {
+                      "type": "string",
+                      "description": "Summary of air quality impact",
+                      "example": "Air quality is moderate due to traffic pollution"
+                    }
+                  }
+                },
+                "ml_predictions": {
+                  "type": "object",
+                  "description": "ML model predictions for pollutant concentrations",
+                  "properties": {
+                    "pm10": {
+                      "type": "float",
+                      "description": "Predicted PM10 concentration",
+                      "example": 52.3
+                    },
+                    "pm2_5": {
+                      "type": "float",
+                      "description": "Predicted PM2.5 concentration",
+                      "example": 31.5
+                    },
+                    "carbon_monoxide": {
+                      "type": "float",
+                      "description": "Predicted CO concentration",
+                      "example": 135.2
+                    },
+                    "nitrogen_dioxide": {
+                      "type": "float",
+                      "description": "Predicted NO₂ concentration",
+                      "example": 42.1
+                    },
+                    "ozone": {
+                      "type": "float",
+                      "description": "Predicted O₃ concentration",
+                      "example": 51.8
+                    },
+                    "us_aqi": {
+                      "type": "integer",
+                      "description": "Predicted US AQI value",
+                      "example": 75
+                    }
+                  }
+                },
+                "timestamp": {
+                  "type": "string",
+                  "description": "Response generation timestamp (ISO 8601)",
+                  "example": "2025-12-07T10:30:45.123456"
+                }
+              }
+            }
+          },
+          "example_response": {
+            "location_or_route": "location",
+            "data": {
+              "coordinates": {
+                "latitude": 28.6139,
+                "longitude": 77.2090
+              },
+              "aqi_data": {
+                "time": ["2025-12-07T00:00", "2025-12-07T01:00"],
+                "pm10": [45.2, 48.5],
+                "pm2_5": [25.1, 27.3],
+                "carbon_monoxide": [120.5, 125.3],
+                "nitrogen_dioxide": [35.2, 38.1],
+                "sulphur_dioxide": [12.3, 11.5],
+                "ozone": [45.6, 48.2],
+                "us_aqi": [65, 68]
+              },
+              "ai_insights": {
+                "precautions": "Avoid outdoor activities, wear N95 mask",
+                "risk_level": "Moderate",
+                "best_time_to_go_out": "Early morning (6-8 AM)",
+                "summary": "Air quality is moderate due to traffic pollution"
+              },
+              "ml_predictions": {
+                "pm10": 52.3,
+                "pm2_5": 31.5,
+                "carbon_monoxide": 135.2,
+                "nitrogen_dioxide": 42.1,
+                "ozone": 51.8,
+                "us_aqi": 75
+              },
+              "timestamp": "2025-12-07T10:30:45.123456"
+            }
+          }
+        },
+        "curl_example": "curl -X POST http://localhost:8000/analyze/location -H \"Content-Type: application/json\" -d \"{\\\"latitude\\\": 28.6139, \\\"longitude\\\": 77.2090}\"",
+        "use_cases": [
+          "Check air quality before outdoor activities",
+          "Monitor pollution at specific address",
+          "Compare air quality across different locations",
+          "Plan travel based on air quality"
+        ]
+      },
+      "3_analyze_route": {
+        "name": "Analyze Route/Polyline",
+        "method": "POST",
+        "url": "/analyze/route",
+        "description": "Get air quality analysis for a route with multiple waypoints",
+        "purpose": "Analyze a journey path segment-by-segment, providing route-specific hazard levels and optimal routing",
+        "input": {
+          "type": "JSON",
+          "content_type": "application/json",
+          "body": {
+            "points": {
+              "type": "array",
+              "description": "List of route waypoints in order",
+              "required": true,
+              "items": {
+                "type": "object",
+                "properties": {
+                  "latitude": {
+                    "type": "float",
+                    "description": "Waypoint latitude",
+                    "required": true
+                  },
+                  "longitude": {
+                    "type": "float",
+                    "description": "Waypoint longitude",
+                    "required": true
+                  },
+                  "order": {
+                    "type": "integer",
+                    "description": "Sequence number (0, 1, 2, ...)",
+                    "required": true
+                  }
+                }
+              }
+            },
+            "snap_to_roads": {
+              "type": "boolean",
+              "description": "Snap points to actual roads (future feature, currently always false)",
+              "required": false,
+              "default": false
+            }
+          },
+          "example_input": {
+            "points": [
+              {
+                "latitude": 28.6139,
+                "longitude": 77.2090,
+                "order": 0
+              },
+              {
+                "latitude": 28.6200,
+                "longitude": 77.2150,
+                "order": 1
+              },
+              {
+                "latitude": 28.6250,
+                "longitude": 77.2200,
+                "order": 2
+              }
+            ],
+            "snap_to_roads": false
+          },
+          "test_routes": [
+            {
+              "name": "Route 1: Delhi to Gurgaon",
+              "points": [
+                {"latitude": 28.6139, "longitude": 77.2090, "order": 0},
+                {"latitude": 28.4595, "longitude": 77.0266, "order": 1}
+              ]
+            },
+            {
+              "name": "Route 2: Mumbai City Loop",
+              "points": [
+                {"latitude": 19.0760, "longitude": 72.8777, "order": 0},
+                {"latitude": 19.0896, "longitude": 72.8656, "order": 1},
+                {"latitude": 19.0760, "longitude": 72.8777, "order": 2}
+              ]
+            }
+          ]
+        },
+        "output": {
+          "status_code": 200,
+          "content_type": "application/json",
+          "schema": {
+            "location_or_route": {
+              "type": "string",
+              "value": "route"
+            },
+            "data": {
+              "type": "object",
+              "properties": {
+                "route_id": {
+                  "type": "string",
+                  "description": "Unique route identifier with timestamp",
+                  "example": "route_2025_12_07_103045"
+                },
+                "total_distance_km": {
+                  "type": "float",
+                  "description": "Total distance of the entire route",
+                  "example": 8.5
+                },
+                "total_time_minutes": {
+                  "type": "float",
+                  "description": "Estimated travel time (assuming 40 km/h)",
+                  "example": 12.3
+                },
+                "segments": {
+                  "type": "array",
+                  "description": "Array of route segments (between consecutive waypoints)",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "start_point": {
+                        "type": "object",
+                        "properties": {
+                          "latitude": {"type": "float"},
+                          "longitude": {"type": "float"}
+                        }
+                      },
+                      "end_point": {
+                        "type": "object",
+                        "properties": {
+                          "latitude": {"type": "float"},
+                          "longitude": {"type": "float"}
+                        }
+                      },
+                      "distance_km": {
+                        "type": "float",
+                        "description": "Segment distance using Haversine formula"
+                      },
+                      "estimated_time_minutes": {
+                        "type": "float",
+                        "description": "Estimated time for this segment"
+                      },
+                      "avg_aqi": {
+                        "type": "integer",
+                        "description": "Average AQI for this segment"
+                      },
+                      "hazard_level": {
+                        "type": "string",
+                        "enum": ["Low", "Moderate", "High", "Severe", "Critical"],
+                        "description": "Hazard level based on AQI"
+                      },
+                      "pollutant_predictions": {
+                        "type": "object",
+                        "properties": {
+                          "pm10": {"type": "float"},
+                          "pm2_5": {"type": "float"},
+                          "carbon_monoxide": {"type": "float"},
+                          "nitrogen_dioxide": {"type": "float"},
+                          "ozone": {"type": "float"},
+                          "us_aqi": {"type": "integer"}
+                        }
+                      }
+                    }
+                  }
+                },
+                "overall_hazard": {
+                  "type": "string",
+                  "enum": ["Low", "Moderate", "High", "Severe", "Critical"],
+                  "description": "Overall hazard level for entire route"
+                },
+                "timestamp": {
+                  "type": "string",
+                  "description": "Response generation timestamp"
+                }
+              }
+            }
+          },
+          "example_response": {
+            "location_or_route": "route",
+            "data": {
+              "route_id": "route_2025_12_07_103045",
+              "total_distance_km": 8.5,
+              "total_time_minutes": 12.3,
+              "segments": [
+                {
+                  "start_point": {"latitude": 28.6139, "longitude": 77.2090},
+                  "end_point": {"latitude": 28.6200, "longitude": 77.2150},
+                  "distance_km": 4.2,
+                  "estimated_time_minutes": 6.1,
+                  "avg_aqi": 68,
+                  "hazard_level": "Moderate",
+                  "pollutant_predictions": {
+                    "pm10": 50.2,
+                    "pm2_5": 28.5,
+                    "carbon_monoxide": 130.1,
+                    "nitrogen_dioxide": 40.5,
+                    "ozone": 48.2,
+                    "us_aqi": 72
+                  }
+                },
+                {
+                  "start_point": {"latitude": 28.6200, "longitude": 77.2150},
+                  "end_point": {"latitude": 28.6250, "longitude": 77.2200},
+                  "distance_km": 4.3,
+                  "estimated_time_minutes": 6.2,
+                  "avg_aqi": 72,
+                  "hazard_level": "Moderate",
+                  "pollutant_predictions": {
+                    "pm10": 55.1,
+                    "pm2_5": 32.3,
+                    "carbon_monoxide": 140.5,
+                    "nitrogen_dioxide": 45.2,
+                    "ozone": 52.5,
+                    "us_aqi": 78
+                  }
+                }
+              ],
+              "overall_hazard": "Moderate",
+              "timestamp": "2025-12-07T10:30:45.123456"
+            }
+          }
+        },
+        "curl_example": "curl -X POST http://localhost:8000/analyze/route -H \"Content-Type: application/json\" -d \"{\\\"points\\\": [{\\\"latitude\\\": 28.6139, \\\"longitude\\\": 77.2090, \\\"order\\\": 0}, {\\\"latitude\\\": 28.6200, \\\"longitude\\\": 77.2150, \\\"order\\\": 1}], \\\"snap_to_roads\\\": false}\"",
+        "use_cases": [
+          "Plan travel routes avoiding high pollution areas",
+          "Check air quality for commute",
+          "ETA calculation with environmental data",
+          "Optimize delivery routes for health/safety",
+          "Compare alternative routes by air quality"
+        ]
+      },
+      "4_model_status": {
+        "name": "Get Model Status",
+        "method": "GET",
+        "url": "/models/status",
+        "description": "Check ML model initialization and status",
+        "purpose": "Verify which ML models are loaded and ready for predictions",
+        "input": {
+          "type": "None",
+          "body": "No request body needed",
+          "query_parameters": "None"
+        },
+        "output": {
+          "status_code": 200,
+          "content_type": "application/json",
+          "schema": {
+            "ml_initialized": {
+              "type": "boolean",
+              "description": "Whether ML models are initialized and ready"
+            },
+            "models": {
+              "type": "array",
+              "description": "List of ML models loaded",
+              "items": {
+                "type": "string"
+              }
+            },
+            "timestamp": {
+              "type": "string",
+              "description": "Response timestamp"
+            }
+          },
+          "example_response": {
+            "ml_initialized": true,
+            "models": [
+              "pm10_model",
+              "pm2_5_model",
+              "carbon_monoxide_model",
+              "nitrogen_dioxide_model",
+              "ozone_model"
+            ],
+            "timestamp": "2025-12-07T10:30:45.123456"
+          }
+        },
+        "curl_example": "curl -X GET http://localhost:8000/models/status",
+        "use_cases": [
+          "Check if API is ready for predictions",
+          "Monitor model availability",
+          "Debug initialization issues"
+        ]
+      },
+      "5_train_models": {
+        "name": "Train ML Models",
+        "method": "POST",
+        "url": "/models/train",
+        "description": "Train ML models with synthetic data (background task)",
+        "purpose": "Retrain models with specified number of samples",
+        "input": {
+          "type": "Query Parameter",
+          "query_parameters": {
+            "n_samples": {
+              "type": "integer",
+              "description": "Number of synthetic training samples to generate",
+              "default": 1000,
+              "example": 1000,
+              "note": "Higher values = longer training time but potentially better model accuracy"
+            }
+          },
+          "example_url": "http://localhost:8000/models/train?n_samples=1000"
+        },
+        "output": {
+          "status_code": 200,
+          "content_type": "application/json",
+          "schema": {
+            "status": {
+              "type": "string",
+              "value": "training_started"
+            },
+            "samples": {
+              "type": "integer",
+              "description": "Number of samples used for training"
+            },
+            "timestamp": {
+              "type": "string",
+              "description": "Response timestamp"
+            }
+          },
+          "example_response": {
+            "status": "training_started",
+            "samples": 1000,
+            "timestamp": "2025-12-07T10:30:45.123456"
+          },
+          "note": "Training runs in background. Check /models/status after ~30 seconds."
+        },
+        "curl_example": "curl -X POST \"http://localhost:8000/models/train?n_samples=1000\"",
+        "training_duration": "~30 seconds for 1000 samples",
+        "use_cases": [
+          "Improve model accuracy with more training data",
+          "Retrain models with updated data",
+          "Test model performance with different sample sizes"
+        ]
+      },
+      "6_documentation": {
+        "name": "API Documentation (Swagger UI)",
+        "method": "GET",
+        "url": "/docs",
+        "description": "Interactive API documentation",
+        "purpose": "View and test all API endpoints in browser",
+        "input": {
+          "type": "None",
+          "body": "Open in web browser"
+        },
+        "output": {
+          "type": "HTML/Interactive",
+          "description": "Interactive Swagger UI with all endpoints, schemas, and test interface"
+        },
+        "browser_url": "http://localhost:8000/docs",
+        "features": [
+          "View all endpoints and parameters",
+          "See request/response schemas",
+          "Test endpoints directly",
+          "Download OpenAPI spec"
+        ]
+      }
+    },
+    "pollutants_measured": [
+      {
+        "symbol": "PM10",
+        "name": "Particulate Matter (10 micrometers)",
+        "unit": "µg/m³",
+        "health_effect": "Respiratory system irritation"
+      },
+      {
+        "symbol": "PM2.5",
+        "name": "Fine Particulate Matter (2.5 micrometers)",
+        "unit": "µg/m³",
+        "health_effect": "Deep lung penetration, cardiovascular effects"
+      },
+      {
+        "symbol": "CO",
+        "name": "Carbon Monoxide",
+        "unit": "µg/m³",
+        "health_effect": "Oxygen depletion in blood"
+      },
+      {
+        "symbol": "NO₂",
+        "name": "Nitrogen Dioxide",
+        "unit": "µg/m³",
+        "health_effect": "Airway inflammation"
+      },
+      {
+        "symbol": "O₃",
+        "name": "Ozone",
+        "unit": "µg/m³",
+        "health_effect": "Respiratory and lung damage"
+      }
+    ],
+    "hazard_levels": {
+      "Low": {
+        "aqi_range": "0-50",
+        "description": "Good air quality",
+        "recommendation": "Outdoor activities are fine"
+      },
+      "Moderate": {
+        "aqi_range": "51-100",
+        "description": "Acceptable air quality",
+        "recommendation": "Sensitive groups should limit outdoor exposure"
+      },
+      "High": {
+        "aqi_range": "101-150",
+        "description": "Unhealthy for sensitive groups",
+        "recommendation": "Avoid prolonged outdoor activities"
+      },
+      "Severe": {
+        "aqi_range": "151-200",
+        "description": "Unhealthy",
+        "recommendation": "Everyone should limit outdoor activities"
+      },
+      "Critical": {
+        "aqi_range": "201+",
+        "description": "Very unhealthy",
+        "recommendation": "Avoid all outdoor activities"
+      }
+    },
+    "ml_models": {
+      "algorithm": "Gradient Boosting Regressor",
+      "number_of_models": 5,
+      "models": [
+        "PM10 Concentration Predictor",
+        "PM2.5 Concentration Predictor",
+        "Carbon Monoxide Predictor",
+        "Nitrogen Dioxide Predictor",
+        "Ozone Predictor"
+      ],
+      "features": [
+        "Latitude",
+        "Longitude",
+        "Hour of day",
+        "Day of week",
+        "Is weekend",
+        "Temperature",
+        "Humidity",
+        "Wind speed",
+        "Traffic density"
+      ],
+      "total_features": 9,
+      "training": {
+        "default_samples": 1000,
+        "train_test_split": "80/20",
+        "estimators": 100,
+        "learning_rate": 0.1,
+        "max_depth": 5
+      }
+    },
+    "data_sources": {
+      "real_time_aqi": {
+        "provider": "Open-Meteo API",
+        "url": "https://api.open-meteo.com/v1/air-quality",
+        "data_type": "Hourly AQI measurements",
+        "cache_duration": "10 minutes"
+      },
+      "ai_insights": {
+        "provider": "Groq AI",
+        "model": "mixtral-8x7b-32768",
+        "purpose": "Generate health insights and precautions"
+      },
+      "ml_predictions": {
+        "type": "Gradient Boosting models",
+        "purpose": "Predict future pollutant concentrations"
+      }
+    },
+    "error_responses": {
+      "400_bad_request": {
+        "status_code": 400,
+        "description": "Invalid input parameters",
+        "example_error": "Invalid latitude/longitude values"
+      },
+      "422_unprocessable_entity": {
+        "status_code": 422,
+        "description": "Validation error in request body",
+        "example_error": "latitude must be between -90 and 90"
+      },
+      "500_internal_server_error": {
+        "status_code": 500,
+        "description": "Server error during processing",
+        "example_error": "Failed to fetch air quality data"
+      }
+    }
+  }
+}
