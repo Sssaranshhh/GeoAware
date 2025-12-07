@@ -1,0 +1,208 @@
+===============================================================================
+    GEOAWARE FLOOD RISK API - QUICK START GUIDE
+===============================================================================
+
+STEP 1: CREATE VIRTUAL ENVIRONMENT
+=====================================
+Windows PowerShell:
+  python -m venv venv
+
+macOS/Linux:
+  python3 -m venv venv
+
+
+STEP 2: ACTIVATE VIRTUAL ENVIRONMENT
+=====================================
+Windows PowerShell:
+  venv\Scripts\activate
+
+Windows Command Prompt (cmd):
+  venv\Scripts\activate.bat
+
+macOS/Linux:
+  source venv/bin/activate
+
+
+STEP 3: INSTALL DEPENDENCIES
+=====================================
+pip install -r requirements.txt
+
+
+STEP 4: PREPARE DATASET
+=====================================
+python scripts/download_dataset.py
+
+This will:
+  - Download flood dataset (or generate synthetic data)
+  - Save to: flood/data/processed/flood_dataset.csv
+  - Verify dataset structure
+
+
+STEP 5: TRAIN THE MODEL
+=====================================
+python -m flood.ml.train
+
+This will:
+  - Load the dataset
+  - Preprocess features
+  - Train RandomForestClassifier
+  - Save model to: flood/models/flood_model.pkl
+  - Save scaler to: flood/models/scaler.pkl
+  - Display training metrics and evaluation results
+
+
+STEP 6: START FASTAPI SERVER
+=====================================
+python -m uvicorn flood.main:app --host 0.0.0.0 --port 8000 --reload
+
+Server output will show:
+  INFO:     Started server process
+  INFO:     Waiting for application startup.
+  INFO:     Application startup complete [uvicorn]
+  INFO:     Uvicorn running on http://0.0.0.0:8000
+
+
+STEP 7: TEST THE API
+=====================================
+
+Option A: Interactive API Documentation
+  - Open browser: http://localhost:8000/docs
+  - Click on "POST /api/v1/predict" endpoint
+  - Click "Try it out"
+  - Modify request body with test values
+  - Click "Execute"
+
+Option B: Using cURL
+  curl -X POST "http://localhost:8000/api/v1/predict" \
+    -H "Content-Type: application/json" \
+    -d '{"rainfall": 150.5, "river_level": 8.2, "soil_moisture": 65.0, "land_slope": 15.0, "population_density": 500.0}'
+
+Option C: Using Python
+  python -c "
+import requests
+payload = {'rainfall': 150.5, 'river_level': 8.2, 'soil_moisture': 65.0, 'land_slope': 15.0, 'population_density': 500.0}
+response = requests.post('http://localhost:8000/api/v1/predict', json=payload)
+print(response.json())
+"
+
+Option D: Using Postman
+  1. Create new POST request
+  2. URL: http://localhost:8000/api/v1/predict
+  3. Body (JSON): {"rainfall": 150.5, "river_level": 8.2, "soil_moisture": 65.0, "land_slope": 15.0, "population_density": 500.0}
+  4. Click Send
+
+
+AVAILABLE ENDPOINTS
+=====================================
+
+GET /
+  Root endpoint with API information
+
+GET /health
+  Health check endpoint
+
+GET /docs
+  Interactive Swagger UI documentation
+
+GET /api/v1/info
+  Get model information and features
+
+POST /api/v1/predict
+  Predict flood risk (main endpoint)
+
+
+EXAMPLE RESPONSE
+=====================================
+
+Request:
+{
+  "rainfall": 150.5,
+  "river_level": 8.2,
+  "soil_moisture": 65.0,
+  "land_slope": 15.0,
+  "population_density": 500.0
+}
+
+Response:
+{
+  "risk_level": "medium",
+  "confidence": 0.8542,
+  "probability_distribution": {
+    "low": 0.1245,
+    "medium": 0.8542,
+    "high": 0.0213
+  }
+}
+
+
+STOPPING THE SERVER
+=====================================
+Press Ctrl+C in the terminal running uvicorn
+
+
+PROJECT FILES
+=====================================
+flood/
+  ├── main.py                          # FastAPI application
+  ├── config.py                        # Configuration settings
+  ├── models/flood_model.pkl           # Trained model (created after training)
+  ├── models/scaler.pkl                # Feature scaler (created after training)
+  ├── ml/train.py                      # Training script
+  ├── ml/features.py                   # Feature preprocessing
+  ├── ml/predict.py                    # Prediction module
+  ├── api/routes.py                    # API endpoints
+  ├── api/schemas.py                   # Pydantic models
+  ├── data/processed/flood_dataset.csv # Dataset (created by download_dataset.py)
+  ├── utils/logger.py                  # Logging configuration
+  └── logs/app.log                     # Application logs
+
+scripts/
+  └── download_dataset.py              # Dataset preparation
+
+requirements.txt                        # Python dependencies
+README.md                              # Full documentation
+how_to_run.txt                         # This file
+
+
+TROUBLESHOOTING
+=====================================
+
+Q: ModuleNotFoundError when running training
+A: Make sure virtual environment is activated and requirements are installed
+
+Q: Port 8000 already in use
+A: Use different port: python -m uvicorn flood.main:app --port 8001
+
+Q: "Model file not found" error
+A: Run training script first: python -m flood.ml.train
+
+Q: "Dataset not found" error
+A: Run dataset script first: python scripts/download_dataset.py
+
+Q: Permission denied on scripts
+A: Check file permissions or try: python scripts/download_dataset.py
+
+
+QUICK TEST SEQUENCE
+=====================================
+1. Activate virtual environment
+2. pip install -r requirements.txt
+3. python scripts/download_dataset.py
+4. python -m flood.ml.train
+5. python -m uvicorn flood.main:app --host 0.0.0.0 --port 8000 --reload
+6. Open http://localhost:8000/docs
+7. Try the /api/v1/predict endpoint
+
+
+NEXT STEPS
+=====================================
+- Read README.md for detailed documentation
+- Check flood/config.py to customize model parameters
+- View logs in flood/logs/app.log
+- Modify training data path in config.py
+- Deploy to production using a production ASGI server (Gunicorn)
+
+
+===============================================================================
+For more information, see README.md
+===============================================================================
