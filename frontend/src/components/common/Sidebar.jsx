@@ -18,6 +18,13 @@ const Sidebar = () => {
       icon: "🗺️",
       roles: ["user", "responder", "admin"],
     },
+    {
+      path: "/safety",
+      label: "Safety Tips",
+      icon: "🛡️",
+      roles: ["user", "responder", "admin"],
+    },
+
     { path: "/alert", label: "Report Alert", icon: "🚨", roles: ["user"] },
     {
       path: "/verify",
@@ -36,23 +43,26 @@ const Sidebar = () => {
   const filteredItems = menuItems.filter((item) => item.roles.includes(role));
 
   return (
-    <aside className="w-64 bg-white shadow-md flex flex-col p-4">
-      <h2 className="text-lg font-bold mb-6 text-blue-600">Menu</h2>
+    <aside className="w-64 bg-white border-r border-slate-200 p-6 flex flex-col gap-6 rounded-xl shadow-sm">
+      <h2 className="text-xl font-bold text-slate-800">Menu</h2>
+
       <nav className="flex flex-col gap-2">
         {filteredItems.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}
             className={({ isActive }) =>
-              `flex items-center gap-3 p-3 rounded-lg transition ${
+              `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium
+              ${
                 isActive
-                  ? "bg-blue-500 text-white"
-                  : "text-gray-700 hover:bg-blue-100"
-              }`
+                  ? "bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-lg scale-105"
+                  : "text-slate-700 hover:bg-slate-100 active:scale-95"
+              }
+              `
             }
           >
             <span className="text-xl">{item.icon}</span>
-            <span className="font-medium">{item.label}</span>
+            {item.label}
           </NavLink>
         ))}
       </nav>

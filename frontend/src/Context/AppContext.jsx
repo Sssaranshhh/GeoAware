@@ -54,7 +54,17 @@ export const AppProvider = ({ children }) => {
           setIsLoggedIn(true);
           setUserId(decoded.userId);
           setRole(mapUserTypeToRole(decoded.role));
-          // You can fetch user details here if needed
+
+          // ✅ FIX: Get username from decoded JWT token
+          if (decoded.username) {
+            setUserName(decoded.username);
+          } else {
+            // Fallback: Try localStorage if token doesn't have username
+            const storedUsername = localStorage.getItem("userName");
+            if (storedUsername) {
+              setUserName(storedUsername);
+            }
+          }
         } else {
           // Invalid token
           logoutService();
@@ -72,6 +82,8 @@ export const AppProvider = ({ children }) => {
     setUserName(name);
     setUserId(id);
     setIsLoggedIn(true);
+
+    localStorage.setItem("userName", name);
   };
 
   const logout = () => {
@@ -80,6 +92,8 @@ export const AppProvider = ({ children }) => {
     setRole("user");
     setUserName("John Doe");
     setUserId(null);
+
+    localStorage.removeItem("userName");
   };
 
   const value = {

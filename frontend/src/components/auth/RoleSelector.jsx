@@ -5,26 +5,32 @@ const RoleSelector = () => {
   const { role, setRole } = useAppContext();
 
   const roles = [
-    { key: "user", label: "User", icon: "👤" },
-    { key: "responder", label: "Responder", icon: "🚨" },
-    { key: "admin", label: "Admin", icon: "⚡" },
+    { key: "user", label: "User", icon: "👤", color: "indigo" },
+    { key: "responder", label: "Responder", icon: "🚨", color: "emerald" },
+    { key: "admin", label: "Admin", icon: "⚡", color: "amber" },
   ];
 
   return (
-    <div className="grid grid-cols-3 gap-3 mb-5">
+    <div className="grid grid-cols-3 gap-3 mb-6">
       {roles.map((r) => (
         <button
           key={r.key}
           type="button"
           onClick={() => setRole(r.key)}
-          className={`p-3 border rounded-lg flex flex-col items-center transition transform hover:-translate-y-1 hover:shadow-md ${
+          className={`p-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2 ${
             role === r.key
-              ? "bg-blue-600 text-white border-blue-600"
-              : "bg-white border-gray-300 text-gray-700"
+              ? "border-indigo-500 bg-indigo-50 shadow-lg shadow-indigo-100 scale-105"
+              : "border-slate-200 bg-white hover:border-indigo-300 hover:shadow-md hover:scale-105"
           }`}
         >
-          <span className="text-2xl mb-1">{r.icon}</span>
-          <span className="text-xs font-semibold">{r.label}</span>
+          <span className="text-3xl">{r.icon}</span>
+          <span
+            className={`text-xs font-semibold ${
+              role === r.key ? "text-indigo-700" : "text-slate-600"
+            }`}
+          >
+            {r.label}
+          </span>
         </button>
       ))}
     </div>

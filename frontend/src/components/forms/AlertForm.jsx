@@ -1,26 +1,18 @@
 import React, { useState } from "react";
 
-const AlertForm = () => {
+const AlertForm = ({ws}) => {
   const [severity, setSeverity] = useState("");
   const [message, setMessage] = useState("");
+  const userId = localStorage.getItem("userId")
 
   const handleSubmit = (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const data = {
-      type: formData.get("type"),
-      severity,
-      location: formData.get("location"),
-      description: message,
-      contact: formData.get("contact"),
-    };
-
-    alert(
-      `Alert submitted successfully!\n\nType: ${data.type}\nSeverity: ${data.severity}\nLocation: ${data.location}`
-    );
-    e.target.reset();
-    setMessage("");
-    setSeverity("");
+    ws.send(JSON.stringify({
+      type: "Message",
+      userType: "User",
+      content: message,
+      userId: userId
+    }))
+    alert("Alert sent to officials ✅")
   };
 
   const severityLevels = [

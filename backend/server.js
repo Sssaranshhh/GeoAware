@@ -33,6 +33,7 @@ wss.on("connection", (ws) => {
     const msg = JSON.parse(message)
 
     if (msg.type == "Register") {
+      console.log("triggeredddddddd", msg.userId);
       ws.userId = msg.userId;
       ws.userType = msg.userType;
       clients.set(msg.userId, ws);

@@ -1,28 +1,21 @@
 import React, { useState } from "react";
 
-const BroadcastForm = () => {
+const BroadcastForm = ({ws}) => {
   const [message, setMessage] = useState("");
-  const [priority, setPriority] = useState("medium");
+  const userId = localStorage.getItem("userId")
 
   const handleSubmit = (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const data = {
-      alertType: formData.get("alertType"),
-      severity: priority,
-      region: formData.get("region"),
-      message,
-      actions: formData.get("actions"),
-      duration: formData.get("duration"),
-    };
-
-    alert(
-      `Broadcast Alert Sent!\n\nType: ${data.alertType}\nSeverity: ${data.severity}\nRegion: ${data.region}\n\nMessage: ${data.message}`
-    );
-
-    e.target.reset();
-    setMessage("");
-    setPriority("medium");
+    if(message == ""){
+      alert("Type some message");
+      return;
+    }
+    ws.send(JSON.stringify({
+        userId: userId,
+        type: "Message",
+        userType: "Admin",
+        content: message
+      }))
+    alert("Broadcasted Successfully ✅")
   };
 
   return (
@@ -50,24 +43,6 @@ const BroadcastForm = () => {
             <option value="all-clear">All Clear</option>
           </select>
         </div>
-
-        <div>
-          <label className="block font-semibold text-gray-700 mb-2">
-            Severity Level
-          </label>
-          <select
-            name="severity"
-            value={priority}
-            onChange={(e) => setPriority(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 transition"
-          >
-            <option value="low">Advisory</option>
-            <option value="medium">Watch</option>
-            <option value="high">Warning</option>
-            <option value="critical">Emergency</option>
-          </select>
-        </div>
-
         <div>
           <label className="block font-semibold text-gray-700 mb-2">
             Affected Region
@@ -91,38 +66,10 @@ const BroadcastForm = () => {
             rows="4"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            placeholder="Provide detailed information about the emergency..."
+            placeholder="Provide detailed information about the emergency and recommended actions..."
             className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 transition resize-none"
           />
         </div>
-
-        <div>
-          <label className="block font-semibold text-gray-700 mb-2">
-            Recommended Actions
-          </label>
-          <textarea
-            name="actions"
-            required
-            rows="3"
-            placeholder="List safety measures and evacuation instructions if applicable..."
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 transition resize-none"
-          />
-        </div>
-
-        <div>
-          <label className="block font-semibold text-gray-700 mb-2">
-            Alert Duration (hours)
-          </label>
-          <input
-            name="duration"
-            type="number"
-            required
-            min="1"
-            placeholder="24"
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 transition"
-          />
-        </div>
-
         <button
           type="submit"
           className="w-full p-3 bg-gradient-to-br from-blue-500 to-purple-700 text-white rounded-lg font-semibold hover:scale-105 transition transform"

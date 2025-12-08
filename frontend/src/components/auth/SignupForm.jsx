@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAppContext } from "../../Context/AppContext";
-import { signup } from "../../services/authService";
+import { signup, signin } from "../../services/authService";
+import { toast } from "react-toastify";
 
 const SignupForm = () => {
   const { role, login, mapRoleToUserType } = useAppContext();
@@ -18,9 +19,9 @@ const SignupForm = () => {
     const password = formData.get("password");
     const confirmPassword = formData.get("confirmPassword");
 
-    // Validate passwords match
     if (password !== confirmPassword) {
       setError("Passwords do not match");
+      toast.error("Passwords do not match!");
       setLoading(false);
       return;
     }
@@ -29,34 +30,52 @@ const SignupForm = () => {
       fullname: formData.get("fullname"),
       email: formData.get("email"),
       password: password,
-      userType: mapRoleToUserType(role), // Convert 'user' to 'User', 'responder' to 'Official', 'admin' to 'Admin'
+      userType: mapRoleToUserType(role),
       phone: formData.get("phone"),
     };
 
     try {
-      // Call backend API
       const response = await signup(userData);
 
       if (response.success) {
-        // For User role, log them in directly
-        if (role === "user") {
-          alert("Account created successfully! Welcome to GeoAware.");
-          // Auto-login after signup (you might want to call signin here)
-          login(mapRoleToUserType(role), userData.fullname, response.userId);
-          navigate("/dashboard");
-        } else {
-          // For Admin and Official (responder), show pending message
-          alert(
-            `Signup successful! Your ${role} account is pending verification. You'll receive an email within 24-48 hours once approved.`
-          );
-          e.target.reset();
-        }
+          try {
+            const signinResponse = await signin({
+              email: userData.email,
+              password: userData.password,
+            });
+
+            const token = signinResponse.token;
+            const base64Url = token.split(".")[1];
+            const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+            const jsonPayload = decodeURIComponent(
+              atob(base64)
+                .split("")
+                .map(
+                  (c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2)
+                )
+                .join("")
+            );
+            const decoded = JSON.parse(jsonPayload);
+
+            const userName = signinResponse.username || userData.fullname;
+            login(decoded.role, userName, signinResponse.userId);
+
+            toast.success(
+              "Account created successfully! Welcome to GeoAware 🎉"
+            );
+            navigate("/dashboard");
+          } catch (loginError) {
+            toast.info("Account created! Please login with your credentials.");
+            navigate("/auth");
+          }
       }
     } catch (err) {
       if (err.message === "User already exists") {
         setError("An account with this email or username already exists.");
+        toast.error("Account already exists. Try logging in instead.");
       } else {
         setError(err.message || "Signup failed. Please try again.");
+        toast.error("Signup failed. Please try again.");
       }
     } finally {
       setLoading(false);
@@ -66,15 +85,16 @@ const SignupForm = () => {
   const requiresVerification = role !== "user";
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-5">
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-          {error}
+        <div className="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-xl text-sm flex items-start gap-2">
+          <span className="text-rose-500 mt-0.5">⚠️</span>
+          <span>{error}</span>
         </div>
       )}
 
       <div>
-        <label className="block text-gray-700 font-semibold mb-1">
+        <label className="block text-slate-700 font-medium mb-2 text-sm">
           Full Name
         </label>
         <input
@@ -82,25 +102,27 @@ const SignupForm = () => {
           type="text"
           required
           placeholder="John Doe"
-          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 transition"
           disabled={loading}
+          className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all bg-white disabled:bg-slate-50 disabled:text-slate-500"
         />
       </div>
 
       <div>
-        <label className="block text-gray-700 font-semibold mb-1">Email</label>
+        <label className="block text-slate-700 font-medium mb-2 text-sm">
+          Email Address
+        </label>
         <input
           name="email"
           type="email"
           required
-          placeholder="your@email.com"
-          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 transition"
+          placeholder="you@example.com"
           disabled={loading}
+          className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all bg-white disabled:bg-slate-50 disabled:text-slate-500"
         />
       </div>
 
       <div>
-        <label className="block text-gray-700 font-semibold mb-1">
+        <label className="block text-slate-700 font-medium mb-2 text-sm">
           Phone Number
         </label>
         <input
@@ -108,22 +130,22 @@ const SignupForm = () => {
           type="tel"
           required
           placeholder="+91 XXXXX XXXXX"
-          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 transition"
           disabled={loading}
+          className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all bg-white disabled:bg-slate-50 disabled:text-slate-500"
         />
       </div>
 
       {role === "responder" && (
         <>
           <div>
-            <label className="block text-gray-700 font-semibold mb-1">
+            <label className="block text-slate-700 font-medium mb-2 text-sm">
               Organization
             </label>
             <select
               name="organization"
               required
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 transition"
               disabled={loading}
+              className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all bg-white disabled:bg-slate-50 disabled:text-slate-500"
             >
               <option value="">Select organization...</option>
               <option value="ndrf">NDRF</option>
@@ -134,7 +156,7 @@ const SignupForm = () => {
           </div>
 
           <div>
-            <label className="block text-gray-700 font-semibold mb-1">
+            <label className="block text-slate-700 font-medium mb-2 text-sm">
               Employee ID
             </label>
             <input
@@ -142,8 +164,8 @@ const SignupForm = () => {
               type="text"
               required
               placeholder="EMP12345"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 transition"
               disabled={loading}
+              className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all bg-white disabled:bg-slate-50 disabled:text-slate-500"
             />
           </div>
         </>
@@ -152,7 +174,7 @@ const SignupForm = () => {
       {role === "admin" && (
         <>
           <div>
-            <label className="block text-gray-700 font-semibold mb-1">
+            <label className="block text-slate-700 font-medium mb-2 text-sm">
               Admin Code
             </label>
             <input
@@ -160,13 +182,13 @@ const SignupForm = () => {
               type="text"
               required
               placeholder="Enter admin authorization code"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 transition"
               disabled={loading}
+              className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all bg-white disabled:bg-slate-50 disabled:text-slate-500"
             />
           </div>
 
           <div>
-            <label className="block text-gray-700 font-semibold mb-1">
+            <label className="block text-slate-700 font-medium mb-2 text-sm">
               Department
             </label>
             <input
@@ -174,15 +196,15 @@ const SignupForm = () => {
               type="text"
               required
               placeholder="Disaster Management Authority"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 transition"
               disabled={loading}
+              className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all bg-white disabled:bg-slate-50 disabled:text-slate-500"
             />
           </div>
         </>
       )}
 
       <div>
-        <label className="block text-gray-700 font-semibold mb-1">
+        <label className="block text-slate-700 font-medium mb-2 text-sm">
           Password
         </label>
         <input
@@ -191,13 +213,13 @@ const SignupForm = () => {
           required
           placeholder="••••••••"
           minLength="6"
-          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 transition"
           disabled={loading}
+          className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all bg-white disabled:bg-slate-50 disabled:text-slate-500"
         />
       </div>
 
       <div>
-        <label className="block text-gray-700 font-semibold mb-1">
+        <label className="block text-slate-700 font-medium mb-2 text-sm">
           Confirm Password
         </label>
         <input
@@ -206,25 +228,57 @@ const SignupForm = () => {
           required
           placeholder="••••••••"
           minLength="6"
-          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 transition"
           disabled={loading}
+          className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all bg-white disabled:bg-slate-50 disabled:text-slate-500"
         />
       </div>
 
       <button
         type="submit"
         disabled={loading}
-        className={`w-full p-3 bg-gradient-to-br from-blue-500 to-purple-700 text-white font-semibold rounded-lg transition transform ${
-          loading ? "opacity-50 cursor-not-allowed" : "hover:scale-105"
+        className={`w-full py-3 rounded-xl font-semibold text-white transition-all shadow-lg ${
+          loading
+            ? "bg-slate-400 cursor-not-allowed"
+            : "bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 hover:shadow-xl hover:scale-105 active:scale-100"
         }`}
       >
-        {loading ? "Signing up..." : "Sign Up"}
+        {loading ? (
+          <span className="flex items-center justify-center gap-2">
+            <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+                fill="none"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+            Signing up...
+          </span>
+        ) : (
+          "Create Account"
+        )}
       </button>
 
       {requiresVerification && (
-        <div className="bg-yellow-100 p-3 rounded-md text-sm text-center text-yellow-800">
-          ⏳ {role.charAt(0).toUpperCase() + role.slice(1)} accounts require
-          verification. You'll be notified within 24-48 hours.
+        <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl text-sm text-center">
+          <div className="flex items-center justify-center gap-2 text-amber-700">
+            <span className="text-xl">⏳</span>
+            <span className="font-medium">
+              {role.charAt(0).toUpperCase() + role.slice(1)} accounts require
+              verification
+            </span>
+          </div>
+          <p className="text-amber-600 mt-1 text-xs">
+            You'll be notified within 24-48 hours once approved
+          </p>
         </div>
       )}
     </form>
