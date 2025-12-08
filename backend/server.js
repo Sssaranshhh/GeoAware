@@ -4,6 +4,7 @@ import express from "express"
 import { WebSocketServer } from "ws";
 import cors from "cors"
 import { userRouter } from "./routes/userRoutes.js";
+import { predictRouter } from "./routes/predictRoutes.js";
 import http from "http"
 import { wsMessage } from "./ws/wsMessage.js";
 

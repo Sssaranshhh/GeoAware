@@ -38,6 +38,12 @@ const Sidebar = () => {
       icon: "📢",
       roles: ["admin"],
     },
+    {
+      path: "/predict",
+      label: "Disaster Prediction",
+      icon: "🗓️",
+      roles: ["user", "responder", "admin"],
+    },
   ];
 
   const filteredItems = menuItems.filter((item) => item.roles.includes(role));

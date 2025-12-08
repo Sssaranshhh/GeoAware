@@ -10,6 +10,7 @@ import AlertPage from "./pages/AlertPage";
 import VerifyPage from "./pages/VerifyPage";
 import BroadcastPage from "./pages/BroadcastPage";
 import SafetyPage from "./pages/SafetyPage";
+import MLplugin from "./components/ml-models/ML-plugin";
 
 // Layout wrapper for authenticated pages
 import AppLayout from "./components/common/AppLayout";
@@ -74,9 +75,12 @@ const App = () => {
           <Route path="dashboard" element={<DashboardPage />} />
           <Route path="map" element={<MapPage />} />
           <Route path="safety" element={<SafetyPage />} />
+          <Route path="predict" element={<MLplugin/>}/>
 
           {/* User-specific routes */}
-          {role === "user" && <Route path="alert" element={<AlertPage ws={ws} />} />}
+          {role === "user" && (
+            <Route path="alert" element={<AlertPage ws={ws} />} />
+          )}
 
           {/* Responder-specific routes */}
           {role === "responder" && (

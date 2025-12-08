@@ -1,4 +1,3 @@
-// backend/routes/predictRoutes.js
 import express from "express";
 import {
   predictCyclone,

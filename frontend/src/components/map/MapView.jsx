@@ -1,31 +1,21 @@
 import React, { useEffect, useRef, useState } from "react";
 
-/*
-  MapView.jsx (fixed - all layers OFF by default)
-  - Loads Leaflet + Leaflet.heat dynamically (CDN) so this works without npm installs.
-  - Loads CSVs from public/ directory (paths used in your repo).
-  - ALL layers OFF by default for clean map view.
-  - Toggle ON to enable each layer individually.
-*/
 
 export default function MapView() {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
 
-  // LayerGroup refs
   const heatRef = useRef(null);
   const quakeLayerRef = useRef(null);
   const cycloneRef = useRef(null);
   const floodRef = useRef(null);
   const fireRef = useRef(null);
 
-  // store raw parsed datasets
   const earthquakesRef = useRef([]);
   const cycloneRefData = useRef([]);
   const floodRefData = useRef([]);
   const fireRefData = useRef([]);
 
-  // UI state - ALL OFF by default
   const [mapLoaded, setMapLoaded] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
 
@@ -37,7 +27,6 @@ export default function MapView() {
 
   const [magThreshold, setMagThreshold] = useState(3.0);
 
-  // Load Leaflet + heat plugin via CDN, then initialize map and layers.
   useEffect(() => {
     // add leaflet css
     const cssLink = document.createElement("link");
@@ -66,14 +55,11 @@ export default function MapView() {
 
     document.head.appendChild(leafletScript);
 
-    // cleanup: remove map on unmount
     return () => {
       try {
         if (mapRef.current) mapRef.current.remove();
       } catch (e) {}
     };
-    // run once
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Initialize the Leaflet map and prepare LayerGroups
@@ -113,7 +99,7 @@ export default function MapView() {
 
     setMapLoaded(true);
 
-    // Load datasets (from public/)
+    // Load datasets 
     Promise.all([
       fetchCSV("/Indian_earthquake_data.csv"),
       fetchCSV("/cyclone_dataset.csv"),
@@ -126,7 +112,6 @@ export default function MapView() {
         floodRefData.current = parseLatLngCSV(flRows);
         fireRefData.current = parseForestFireCSV(ffRows);
 
-        // Don't draw anything initially since all layers are OFF
         setDataLoaded(true);
       })
       .catch((err) => {
