@@ -1,18 +1,19 @@
 import React from "react";
 import VerifyReports from "../components/forms/VerifyReports";
 
-const VerifyPage = () => {
+const VerifyPage = ({ws, message}) => {
   return (
-    <div>
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">
-          Verify Emergency Reports
-        </h1>
-        <p className="text-gray-600 mt-1">
-          Review and verify incoming disaster reports from the community
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-2xl font-bold text-slate-800">
+          Verify Community Reports 🕵️‍♂️
+        </h2>
+        <p className="text-slate-600 text-sm">
+          Review and validate incoming emergency alerts.
         </p>
       </div>
-      <VerifyReports />
+
+      <VerifyReports ws={ws} message={message}/>
     </div>
   );
 };

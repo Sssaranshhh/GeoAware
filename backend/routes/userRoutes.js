@@ -2,6 +2,7 @@ import { Router } from "express";
 import bcrypt from "bcrypt"
 import User from "../models/UserModel.js";
 import jwt from "jsonwebtoken"
+import Message from "../models/MessageModel.js";
 
 export const userRouter = Router();
 
@@ -71,6 +72,32 @@ userRouter.post("/signin", async(req, res)=>{
     }, process.env.JWT_PASS)
     res.json({
         token,
-        userId: user._id
+        userId: user._id,
+        userType: user.userType
     })
+})
+
+userRouter.post("/addMessage", async(req, res)=>{
+    const {message} = req.body;
+    const user = User.findOne({
+        id: message.userId
+    })
+    const createdMessage = await Message.create({
+        username: user?.username,
+        content: message.content,
+        userId: message.userId,
+        receiverType: message.receiverType
+    })
+    if(!createdMessage){
+        return res.json({
+            message: "Something went wrong in message controller"
+        })
+    }
+    return res.json({
+        success: true,
+        message: "Message Created"
+    })
+})
+userRouter.get("/message", async(req,res)=>{
+
 })
