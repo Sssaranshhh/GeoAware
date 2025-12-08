@@ -44,6 +44,24 @@ const Sidebar = () => {
       icon: "🗓️",
       roles: ["user", "responder", "admin"],
     },
+    {
+      path: "/air-quality",
+      label: "Air Quality",
+      icon: "😷",
+      roles: ["user", "responder", "admin"],
+    },
+    {
+      path: "/flood-routing",
+      label: "Flood Route",
+      icon: "⛵",
+      roles: ["user", "responder", "admin"],
+    },
+    {
+      path: "/flood-prediction",
+      label: "Flood Prediction",
+      icon: "🌊",
+      roles: ["user", "responder", "admin"],
+    }
   ];
 
   const filteredItems = menuItems.filter((item) => item.roles.includes(role));
