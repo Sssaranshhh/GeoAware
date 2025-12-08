@@ -18,7 +18,8 @@ app.use(cors({
     credentials: true
 }))
 app.use(express.json());
-app.use("/", userRouter)
+app.use("/", userRouter);
+app.use("/predict", predictRouter);
 
 const server = http.createServer(app);
 
@@ -33,7 +34,7 @@ wss.on("connection", (ws) => {
     const msg = JSON.parse(message)
 
     if (msg.type == "Register") {
-      console.log("triggeredddddddd", msg.userId);
+      console.log("triggeredddddddd", msg.userId);  
       ws.userId = msg.userId;
       ws.userType = msg.userType;
       clients.set(msg.userId, ws);
