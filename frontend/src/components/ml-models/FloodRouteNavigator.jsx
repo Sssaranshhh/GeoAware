@@ -4,12 +4,14 @@ import axios from "axios";
 export default function FloodRouteNavigator() {
   const API_BASE = "http://localhost:8000";
   // Check your Swagger docs at /docs and update this if different
-  const DEFAULT_ROUTE_ENDPOINT = "/analyze/route"; // e.g. "/routes/analyze", "/flood/route", etc.
+  
+  const DEFAULT_ROUTE_ENDPOINT = "/route/safe"; // e.g. "/routes/analyze", "/flood/route", etc.
 
   const [backendOnline, setBackendOnline] = useState(false);
   const [healthInfo, setHealthInfo] = useState(null);
 
   const [routeEndpoint, setRouteEndpoint] = useState(DEFAULT_ROUTE_ENDPOINT);
+
 
   const [routePoints, setRoutePoints] = useState([
     { latitude: 28.6139, longitude: 77.209 },
@@ -40,6 +42,7 @@ export default function FloodRouteNavigator() {
       }
     })();
   }, []);
+
 
   // ─────────────────────────────────
   // Helpers to modify route points
@@ -75,23 +78,61 @@ export default function FloodRouteNavigator() {
         order: idx,
       }));
 
-      // Basic payload – adjust this shape to whatever /docs shows
+      if (payloadPoints.length < 2) {
+        setErrorMsg("Need at least 2 route points (origin + destination).");
+        setLoading(false);
+        return;
+      }
+
+      // origin = first point, dest = last point
+      const origin = payloadPoints[0];
+      const dest = payloadPoints[payloadPoints.length - 1];
+
+      // Build body to match server expectations (origin/dest fields required)
       const body = {
+        origin_lat: origin.latitude,
+        origin_lon: origin.longitude,
+        dest_lat: dest.latitude,
+        dest_lon: dest.longitude,
+
+        // include the full points array just in case backend uses it
         points: payloadPoints,
-        // Optional: send extras only if your backend expects them
+
+        // optional fields
         scenario: scenario || undefined,
         departure_time: departureTime || undefined,
       };
+
+      console.log("POSTing to:", `${API_BASE}${routeEndpoint}`, body);
 
       const res = await axios.post(`${API_BASE}${routeEndpoint}`, body);
       setResult(res.data);
     } catch (err) {
       console.error(err);
-      setErrorMsg(
-        err.response?.data?.detail ||
-          err.response?.data?.error ||
-          "Request failed – check console and make sure endpoint + payload match backend"
-      );
+
+      const serverData = err.response?.data;
+
+      const formatValidation = (detail) => {
+        if (Array.isArray(detail)) {
+          return detail
+            .map((d) => {
+              const loc = Array.isArray(d.loc) ? d.loc.join(".") : d.loc;
+              return `${loc}: ${d.msg}`;
+            })
+            .join("\n");
+        }
+        return typeof detail === "object"
+          ? JSON.stringify(detail, null, 2)
+          : String(detail);
+      };
+
+      const readable = serverData
+        ? serverData.detail
+          ? formatValidation(serverData.detail)
+          : JSON.stringify(serverData, null, 2)
+        : "Request failed – check console and make sure endpoint + payload match backend";
+
+      setErrorMsg(readable);
     } finally {
       setLoading(false);
     }
@@ -294,7 +335,8 @@ export default function FloodRouteNavigator() {
             fontSize: "13px",
           }}
         >
-          <strong>Error: </strong> {errorMsg}
+          <strong>Error: </strong>
+          <pre style={{ whiteSpace: "pre-wrap", margin: 0 }}>{errorMsg}</pre>
         </div>
       )}
 
