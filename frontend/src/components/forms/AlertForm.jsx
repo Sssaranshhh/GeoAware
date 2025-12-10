@@ -16,11 +16,12 @@ const AlertForm = ({ws}) => {
   };
 
   const severityLevels = [
-    { key: "Low", color: "green-500" },
-    { key: "Moderate", color: "yellow-400" },
-    { key: "High", color: "orange-500" },
-    { key: "Critical", color: "red-500" },
+    { key: "Low", active: "bg-green-500 text-white border-green-500" },
+    { key: "Moderate", active: "bg-yellow-400 text-black border-yellow-400" },
+    { key: "High", active: "bg-orange-500 text-white border-orange-500" },
+    { key: "Critical", active: "bg-red-500 text-white border-red-500" },
   ];
+
 
   return (
     <form
@@ -59,7 +60,7 @@ const AlertForm = ({ws}) => {
                 onClick={() => setSeverity(level.key)}
                 className={`p-3 rounded-lg font-semibold border-2 transition ${
                   severity === level.key
-                    ? `bg-${level.color} text-white border-${level.color}`
+                    ? level.active
                     : "bg-white text-gray-700 border-gray-300 hover:border-gray-400"
                 }`}
               >
