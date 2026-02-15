@@ -1,0 +1,76 @@
+[ 2026-02-15 09:51:04,673 ] 148 numexpr.utils - INFO - Note: NumExpr detected 20 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 8.
+[ 2026-02-15 09:51:04,673 ] 160 numexpr.utils - INFO - NumExpr defaulting to 8 threads.
+[ 2026-02-15 09:51:05,765 ] 12 root - INFO - Starting flood risk prediction pipeline
+[ 2026-02-15 09:51:05,765 ] 15 root - INFO - 
+==================================================
+[ 2026-02-15 09:51:05,765 ] 16 root - INFO - STEP 1: DATA PROCESSING
+[ 2026-02-15 09:51:05,765 ] 17 root - INFO - ==================================================
+[ 2026-02-15 09:51:05,767 ] 123 root - INFO - Initiating flood data processing pipeline
+[ 2026-02-15 09:51:05,767 ] 24 root - INFO - Starting dataset merge for flood prediction
+[ 2026-02-15 09:51:05,799 ] 31 root - INFO - IMC shape: (370, 12), OLR shape: (338, 12), CTP shape: (345, 15)
+[ 2026-02-15 09:51:05,806 ] 54 root - INFO - Merged dataset shape: (327, 9)
+[ 2026-02-15 09:51:05,806 ] 63 root - INFO - Handling invalid values (-999)
+[ 2026-02-15 09:51:05,808 ] 75 root - INFO - Dropped 1 rows with invalid values
+[ 2026-02-15 09:51:05,808 ] 84 root - INFO - Creating flood risk labels
+[ 2026-02-15 09:51:05,813 ] 114 root - INFO - Flood risk distribution:
+flood_risk
+Medium    148
+Low       125
+High       53
+Name: count, dtype: int64
+[ 2026-02-15 09:51:05,817 ] 138 root - INFO - Merged data shape: (326, 10)
+[ 2026-02-15 09:51:05,817 ] 139 root - INFO - Flood data processing completed
+[ 2026-02-15 09:51:05,817 ] 23 root - INFO - 
+==================================================
+[ 2026-02-15 09:51:05,817 ] 24 root - INFO - STEP 2: MODEL TRAINING
+[ 2026-02-15 09:51:05,817 ] 25 root - INFO - ==================================================
+[ 2026-02-15 09:51:05,817 ] 30 root - INFO - Starting flood risk model training
+[ 2026-02-15 09:51:05,838 ] 34 root - INFO - Data shape: (326, 10)
+[ 2026-02-15 09:51:05,839 ] 42 root - INFO - Class labels: ['High' 'Low' 'Medium']
+[ 2026-02-15 09:51:05,840 ] 43 root - INFO - Class distribution:
+2    148
+1    125
+0     53
+Name: count, dtype: int64
+[ 2026-02-15 09:51:05,842 ] 52 root - INFO - Training set size: 260, Test set size: 66
+[ 2026-02-15 09:51:05,842 ] 64 root - INFO - Training RandomForestClassifier
+[ 2026-02-15 09:51:06,143 ] 75 root - INFO - 
+==================================================
+[ 2026-02-15 09:51:06,143 ] 76 root - INFO - Training Accuracy: 0.9615
+[ 2026-02-15 09:51:06,143 ] 77 root - INFO - Testing Accuracy: 0.9697
+[ 2026-02-15 09:51:06,143 ] 78 root - INFO - ==================================================
+[ 2026-02-15 09:51:06,147 ] 80 root - INFO - 
+Classification Report:
+              precision    recall  f1-score   support
+
+        High       0.85      1.00      0.92        11
+         Low       1.00      1.00      1.00        25
+      Medium       1.00      0.93      0.97        30
+
+    accuracy                           0.97        66
+   macro avg       0.95      0.98      0.96        66
+weighted avg       0.97      0.97      0.97        66
+
+[ 2026-02-15 09:51:06,148 ] 83 root - INFO - 
+Confusion Matrix:
+[[11  0  0]
+ [ 0 25  0]
+ [ 2  0 28]]
+[ 2026-02-15 09:51:06,200 ] 101 root - INFO - 
+Feature Importance:
+          feature  importance
+2   imc_pct_gt_10    0.273728
+3        olr_mean    0.131493
+6        ctp_mean    0.118341
+0        imc_mean    0.116832
+8  ctp_pct_lt_300    0.088909
+1    imc_pct_gt_5    0.078287
+7  ctp_pct_lt_200    0.073964
+4  olr_pct_lt_220    0.065957
+5  olr_pct_lt_240    0.052489
+[ 2026-02-15 09:51:06,206 ] 109 root - INFO - Model saved to models\flood_risk_model.pkl
+[ 2026-02-15 09:51:06,206 ] 110 root - INFO - Label encoder saved to models\flood_label_encoder.pkl
+[ 2026-02-15 09:51:06,207 ] 30 root - INFO - 
+==================================================
+[ 2026-02-15 09:51:06,207 ] 31 root - INFO - FLOOD PREDICTION PIPELINE COMPLETED SUCCESSFULLY
+[ 2026-02-15 09:51:06,207 ] 32 root - INFO - ==================================================

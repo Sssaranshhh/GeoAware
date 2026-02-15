@@ -1,0 +1,32 @@
+[ 2026-02-15 09:49:50,935 ] 148 numexpr.utils - INFO - Note: NumExpr detected 20 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 8.
+[ 2026-02-15 09:49:50,935 ] 160 numexpr.utils - INFO - NumExpr defaulting to 8 threads.
+[ 2026-02-15 09:49:52,999 ] 12 root - INFO - Starting flood risk prediction pipeline
+[ 2026-02-15 09:49:52,999 ] 15 root - INFO - 
+==================================================
+[ 2026-02-15 09:49:52,999 ] 16 root - INFO - STEP 1: DATA PROCESSING
+[ 2026-02-15 09:49:52,999 ] 17 root - INFO - ==================================================
+[ 2026-02-15 09:49:53,000 ] 109 root - INFO - Initiating flood data processing pipeline
+[ 2026-02-15 09:49:53,000 ] 24 root - INFO - Starting dataset merge for flood prediction
+[ 2026-02-15 09:49:53,031 ] 31 root - INFO - IMC shape: (370, 12), OLR shape: (338, 12), CTP shape: (345, 15)
+[ 2026-02-15 09:49:53,043 ] 47 root - INFO - Merged dataset shape: (0, 10)
+[ 2026-02-15 09:49:53,043 ] 56 root - INFO - Handling invalid values (-999)
+[ 2026-02-15 09:49:53,045 ] 68 root - INFO - Dropped 0 rows with invalid values
+[ 2026-02-15 09:49:53,045 ] 77 root - INFO - Creating flood risk labels
+[ 2026-02-15 09:49:53,051 ] 100 root - INFO - Flood risk distribution:
+flood_risk
+Low       0
+Medium    0
+High      0
+Name: count, dtype: int64
+[ 2026-02-15 09:49:53,055 ] 124 root - INFO - Merged data shape: (0, 10)
+[ 2026-02-15 09:49:53,055 ] 125 root - INFO - Flood data processing completed
+[ 2026-02-15 09:49:53,056 ] 23 root - INFO - 
+==================================================
+[ 2026-02-15 09:49:53,056 ] 24 root - INFO - STEP 2: MODEL TRAINING
+[ 2026-02-15 09:49:53,056 ] 25 root - INFO - ==================================================
+[ 2026-02-15 09:49:53,056 ] 30 root - INFO - Starting flood risk model training
+[ 2026-02-15 09:49:53,066 ] 34 root - INFO - Data shape: (0, 10)
+[ 2026-02-15 09:49:53,067 ] 42 root - INFO - Class labels: []
+[ 2026-02-15 09:49:53,068 ] 43 root - INFO - Class distribution:
+Series([], Name: count, dtype: int64)
+[ 2026-02-15 09:49:53,068 ] 37 root - ERROR - Pipeline failed: Error occured in python script name [C:\Users\bhati\OneDrive\Desktop\GeoAware\src\components\flood_model_trainer.py] line number [48] error message[Found array with 0 sample(s) (shape=(0,)) while a minimum of 1 is required.]

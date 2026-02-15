@@ -1,0 +1,15 @@
+[ 2026-02-15 09:50:26,970 ] 148 numexpr.utils - INFO - Note: NumExpr detected 20 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 8.
+[ 2026-02-15 09:50:26,970 ] 160 numexpr.utils - INFO - NumExpr defaulting to 8 threads.
+[ 2026-02-15 09:50:28,094 ] 12 root - INFO - Starting flood risk prediction pipeline
+[ 2026-02-15 09:50:28,094 ] 15 root - INFO - 
+==================================================
+[ 2026-02-15 09:50:28,094 ] 16 root - INFO - STEP 1: DATA PROCESSING
+[ 2026-02-15 09:50:28,094 ] 17 root - INFO - ==================================================
+[ 2026-02-15 09:50:28,096 ] 116 root - INFO - Initiating flood data processing pipeline
+[ 2026-02-15 09:50:28,096 ] 24 root - INFO - Starting dataset merge for flood prediction
+[ 2026-02-15 09:50:28,126 ] 31 root - INFO - IMC shape: (370, 12), OLR shape: (338, 12), CTP shape: (345, 15)
+[ 2026-02-15 09:50:28,134 ] 54 root - INFO - Merged dataset shape: (327, 9)
+[ 2026-02-15 09:50:28,134 ] 63 root - INFO - Handling invalid values (-999)
+[ 2026-02-15 09:50:28,136 ] 75 root - INFO - Dropped 1 rows with invalid values
+[ 2026-02-15 09:50:28,136 ] 84 root - INFO - Creating flood risk labels
+[ 2026-02-15 09:50:28,140 ] 37 root - ERROR - Pipeline failed: Error occured in python script name [C:\Users\bhati\OneDrive\Desktop\GeoAware\src\components\flood_data_processor.py] line number [125] error message[Error occured in python script name [C:\Users\bhati\OneDrive\Desktop\GeoAware\src\components\flood_data_processor.py] line number [105] error message["['timestamp'] not found in axis"]]
