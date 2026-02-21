@@ -164,10 +164,11 @@ export default function FloodPredict() {
           style={{
             marginTop: 10,
             padding: "10px 15px",
-            background: "#2563eb",
+            background: "var(--accent-blue)",
             color: "white",
             borderRadius: "6px",
             cursor: "pointer",
+            transition: "var(--transition)"
           }}
         >
           {loading ? "Predicting..." : "Predict"}
@@ -178,10 +179,12 @@ export default function FloodPredict() {
         <div
           style={{
             marginTop: 20,
-            background: "#fee2e2",
+            background: "rgba(239, 68, 68, 0.2)",
             padding: 12,
-            color: "#b91c1c",
+            color: "var(--status-danger)",
             borderRadius: 6,
+            border: "1px solid var(--status-danger)",
+            transition: "var(--transition)"
           }}
         >
           {error}
@@ -192,23 +195,48 @@ export default function FloodPredict() {
         <div
           style={{
             marginTop: 20,
-            padding: 15,
-            background: "#0f172a",
-            color: "white",
-            borderRadius: 6,
+            padding: 20,
+            background: "var(--bg-secondary)",
+            borderRadius: 8,
+            border: "1px solid var(--border-light)",
+            color: "var(--text-primary)",
+            transition: "var(--transition)"
           }}
         >
-          <h3>Result</h3>
-          <p>
-            <strong>Risk Level:</strong> {result.risk_level}
-          </p>
-          <p>
-            <strong>Confidence:</strong> {(result.confidence * 100).toFixed(1)}%
-          </p>
-          <h4>Probability Breakdown:</h4>
-          <pre style={{ whiteSpace: "pre-wrap" }}>
-            {JSON.stringify(result.probability_distribution, null, 2)}
-          </pre>
+          <h2 style={{ marginTop: 0, marginBottom: 15, fontSize: 20, color: "var(--accent-blue)" }}>
+            🌊 Prediction Result
+          </h2>
+          
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 15, marginBottom: 15 }}>
+            <div style={{ background: "var(--bg-tertiary)", padding: 12, borderRadius: 6, border: "1px solid var(--border-light)", transition: "var(--transition)" }}>
+              <div style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 5 }}>Risk Level</div>
+              <div style={{ fontSize: 24, fontWeight: "bold", color: "var(--accent-blue)" }}>
+                {result.risk_level}
+              </div>
+            </div>
+            <div style={{ background: "var(--bg-tertiary)", padding: 12, borderRadius: 6, border: "1px solid var(--border-light)", transition: "var(--transition)" }}>
+              <div style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 5 }}>Confidence</div>
+              <div style={{ fontSize: 24, fontWeight: "bold", color: "var(--accent-blue)" }}>
+                {(result.confidence * 100).toFixed(1)}%
+              </div>
+            </div>
+          </div>
+
+          {result.details && (
+            <div style={{ background: "var(--bg-tertiary)", padding: 12, borderRadius: 6, marginBottom: 15, border: "1px solid var(--border-light)", transition: "var(--transition)" }}>
+              <h4 style={{ marginTop: 0, color: "var(--text-primary)" }}>📊 Details</h4>
+              {Object.entries(result.details).map(([key, value]) => (
+                <div key={key} style={{ display: "flex", justifyContent: "space-between", marginBottom: 8, paddingBottom: 8, borderBottom: "1px solid var(--border-light)" }}>
+                  <span style={{ fontSize: 14, color: "var(--text-secondary)", textTransform: "capitalize" }}>
+                    {key.replace(/_/g, " ")}:
+                  </span>
+                  <span style={{ fontWeight: "bold", color: "var(--accent-blue)" }}>
+                    {typeof value === "number" ? value.toFixed(2) : value}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>

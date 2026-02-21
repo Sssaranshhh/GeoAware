@@ -1,0 +1,23 @@
+{
+  "user_credentials": {
+    "username": "krishan_kumar",
+    "password": "UIET@Chd01"
+  },
+
+  "search_parameters": {
+    "datasetId": "3RIMG_L2B_IMC",
+    "startTime": "2025-12-01",
+    "endTime": "2025-12-10",
+    "count": "100",
+    "boundingBox": "70.0,8.0,90.0,28.0",
+    "gId": ""
+  },
+
+  "download_settings": {
+    "download_path": "C:/Users/bhati/OneDrive/Desktop/GeoAware/MOSDAC_Downloads/",
+    "organize_by_date": true,
+    "skip_user_prompt": false,
+    "generate_error_log": true,
+    "error_log_path": "C:/Users/bhati/OneDrive/Desktop/GeoAware/MOSDAC_logs/"
+  }
+}

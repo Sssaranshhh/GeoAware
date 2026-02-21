@@ -3,13 +3,20 @@ import { Outlet } from "react-router-dom";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 
-const AppLayout = () => {
+const AppLayout = ({ darkMode, setDarkMode }) => {
   return (
-    <div className="flex gap-4 p-4">
-      <Sidebar />
+    <div className="flex gap-4 p-4" style={{ backgroundColor: darkMode ? "#191919" : "#ffffff" }}>
+      <Sidebar darkMode={darkMode} />
       <div className="flex-1 flex flex-col gap-4">
-        <Header />
-        <main className="bg-white rounded-2xl shadow-lg border border-slate-200 p-8 overflow-auto">
+        <Header darkMode={darkMode} setDarkMode={setDarkMode} />
+        <main
+          className="rounded-2xl shadow-lg border p-8 overflow-auto"
+          style={{
+            backgroundColor: darkMode ? "#202020" : "#ffffff",
+            color: darkMode ? "#ededed" : "#000000",
+            borderColor: darkMode ? "#2f2f2f" : "#e2e8f0",
+          }}
+        >
           <Outlet />
         </main>
       </div>
