@@ -17,14 +17,15 @@ import FloodPredict from "./components/ml-models/FloodPredict";
 
 // Layout wrapper for authenticated pages
 import AppLayout from "./components/common/AppLayout";
+import Inbox from "./pages/Inbox";
 
 const App = () => {
   const { isLoggedIn, role, loading } = useAppContext();
   const [ws, setWs] = useState(null);
-  const [message, setMessage] = useState({});
+  const [message, setMessage] = useState(null);
+  const userId = localStorage.getItem("userId");
+  const userType = localStorage.getItem("userType");
   useEffect(() => {
-      const userId = localStorage.getItem("userId");
-      const userType = localStorage.getItem("userType");
       const WS = new WebSocket("ws://localhost:3000");
       console.log(userId, userType)
       setWs(WS)
@@ -37,9 +38,11 @@ const App = () => {
         })
       )}
       WS.onmessage = (event) =>{
-        const receivedMessage = event.data
+        const receivedMessage = JSON.parse(event.data)
         console.log("Received Message", receivedMessage)
         setMessage(receivedMessage);
+
+        console.log("incomingg role", receivedMessage.to)
       }
       return () => WS.close();
   }, [])
@@ -70,18 +73,20 @@ const App = () => {
     );
   }
 
+  const filteredMessage = message && message.to && message.to == userType.toLowerCase() ? message : null;
   return (
     <div className="min-h-screen bg-slate-50">
       <Routes>
         <Route path="/" element={<AppLayout />}>
           <Route index element={<Navigate to="/dashboard" replace />} />
-          <Route path="dashboard" element={<DashboardPage />} />
+          <Route path="dashboard" element={<DashboardPage message={filteredMessage} />} />
           <Route path="map" element={<MapPage />} />
           <Route path="safety" element={<SafetyPage />} />
           <Route path="predict" element={<MLplugin/>}/>
           <Route path="air-quality" element={<AirQuality/>}/>
           <Route path="flood-routing" element={<FloodRouteNavigator/>}/>
           <Route path="flood-prediction" element={<FloodPredict/>}/>
+          <Route path="inbox" element={<Inbox message={filteredMessage}/>}/>
           
 
           {/* User-specific routes */}

@@ -1,16 +1,28 @@
 import React, { useState } from "react";
 
-const AlertForm = ({ws}) => {
+const AlertForm = ({ ws }) => {
   const [severity, setSeverity] = useState("");
+  const [location, setLocation] = useState("");
+  const [disasterType, setDisasterType] = useState(null);
+  const [contact, setContact] = useState(null);
   const [message, setMessage] = useState("");
   const userId = localStorage.getItem("userId")
 
   const handleSubmit = (e) => {
+    const data = {
+      disasterType: disasterType,
+      location: location,
+      severity: severity,
+      message: message,
+      contact: contact
+    }
     ws.send(JSON.stringify({
       type: "Message",
       userType: "User",
-      content: message,
-      userId: userId
+      content: data,
+      userId: userId,
+      receiverType: "Official",
+      read: false
     }))
     alert("Alert sent to officials ✅")
   };
@@ -37,6 +49,9 @@ const AlertForm = ({ws}) => {
             name="type"
             required
             className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 transition"
+            onChange={(e) => {
+              setDisasterType(e.target.value)
+            }}
           >
             <option value="">Select disaster type...</option>
             <option value="landslide">Landslide</option>
@@ -58,11 +73,10 @@ const AlertForm = ({ws}) => {
                 key={level.key}
                 type="button"
                 onClick={() => setSeverity(level.key)}
-                className={`p-3 rounded-lg font-semibold border-2 transition ${
-                  severity === level.key
+                className={`p-3 rounded-lg font-semibold border-2 transition ${severity === level.key
                     ? level.active
                     : "bg-white text-gray-700 border-gray-300 hover:border-gray-400"
-                }`}
+                  }`}
               >
                 {level.key}
               </button>
@@ -80,6 +94,9 @@ const AlertForm = ({ws}) => {
             required
             placeholder="Address or landmark (e.g., Main Street, Near City Hall)"
             className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 transition"
+            onChange={(e) => {
+              setLocation(e.target.value)
+            }}
           />
           <p className="text-sm text-gray-500 mt-1">
             📍 Auto-detected: Current Location
@@ -110,6 +127,9 @@ const AlertForm = ({ws}) => {
             type="tel"
             placeholder="+91 XXXXX XXXXX"
             className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 transition"
+            onChange={(e) => {
+              setContact(Number(e.target.value))
+            }}
           />
         </div>
 

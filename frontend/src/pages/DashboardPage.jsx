@@ -1,9 +1,12 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useAppContext } from "../Context/AppContext";
 import StatsCard from "../components/dashboard/StatsCard";
+import {Bell} from "lucide-react"
+import { Link, useNavigate } from "react-router-dom";
 
-const DashboardPage = () => {
+const DashboardPage = ({ message }) => {
   const { role, userName } = useAppContext();
+  const navigate = useNavigate();
 
   const stats = [
     { label: "Total Alerts Submitted", value: 47, icon: "📄" },
@@ -12,13 +15,21 @@ const DashboardPage = () => {
     { label: "Community Rank", value: "#128", icon: "🏆" },
   ];
 
+  const handleInbox = ()=>{
+    navigate(`/inbox`)
+  }
+
   return (
     <div className="space-y-8">
       {/* Welcome Section */}
       <div>
+        <div className="flex justify-between">
         <h1 className="text-3xl font-bold text-slate-800">
           Welcome back, {userName}! 👋
         </h1>
+        <button onClick={handleInbox}><Bell /></button>
+
+        </div>
         <p className="text-slate-600 mt-1">
           {role === "user" && "Stay informed about disasters in your area"}
           {role === "responder" && "Review and verify emergency reports"}

@@ -2,6 +2,9 @@ import React, { useState } from "react";
 
 const BroadcastForm = ({ws}) => {
   const [message, setMessage] = useState("");
+  const [disasterType, setDisasterType] = useState("");
+  const [location, setLocation] = useState("");
+  
   const userId = localStorage.getItem("userId")
 
   const handleSubmit = (e) => {
@@ -9,11 +12,18 @@ const BroadcastForm = ({ws}) => {
       alert("Type some message");
       return;
     }
+    const data = {
+      message: message,
+      disasterType: disasterType,
+      location: location
+    }
     ws.send(JSON.stringify({
         userId: userId,
         type: "Message",
         userType: "Admin",
-        content: message
+        content: data,
+        receiverType: "User",
+        read: false
       }))
     alert("Broadcasted Successfully ✅")
   };
@@ -31,6 +41,9 @@ const BroadcastForm = ({ws}) => {
           <select
             name="alertType"
             required
+            onChange={(e)=>{
+              setDisasterType(e.target.value)
+            }}
             className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 transition"
           >
             <option value="">Select alert type...</option>
@@ -51,6 +64,9 @@ const BroadcastForm = ({ws}) => {
             name="region"
             type="text"
             required
+            onChange={(e)=>{
+              setLocation(e.target.value)
+            }}
             placeholder="e.g., Shimla District, Sector 1-5"
             className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 transition"
           />

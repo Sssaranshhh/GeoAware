@@ -1,7 +1,21 @@
+import mongoose from "mongoose";
+import Message from "../models/MessageModel.js";
 import User from "../models/UserModel.js";
 import { clients } from "../server.js";
 
 export const wsMessage = async (message) => {
+    console.log("message", message)
+    try {
+        const createdMessage = await Message.create({
+            sender: new mongoose.Types.ObjectId(message.userId),
+            content: message.content,
+            receiverType: message.receiverType,
+            read: message.read,
+        })
+        console.log("createdMessage", createdMessage)
+    } catch (error) {
+        console.log("Errorooorrrrrrrrrrr",error)
+    }
     switch (message.userType) {
         case "User":
             console.log("I am a Userrrr", message)
@@ -15,7 +29,7 @@ export const wsMessage = async (message) => {
                         officialWs.send(JSON.stringify({
                             from: message.userId,
                             content: message.content,
-                            to: "Official"
+                            to: "official"
                         }));
                     } catch (error) {
                         console.error(`Failed to send to official ${u._id}:`, error);
@@ -36,7 +50,7 @@ export const wsMessage = async (message) => {
                             from: message.userId,
                             content: message.content,
                             isAuthenticated: message.isAuthenticated,
-                            to: "Admin"
+                            to: "admin"
                         }))
                     } catch (error) {
                         console.error(`Failed to send to admin ${u._id}:`, error);
@@ -57,7 +71,7 @@ export const wsMessage = async (message) => {
                         usersWs.send(JSON.stringify({
                             from: message.userId,
                             content: message.content,
-                            to: "User"
+                            to: "user"
                         }))
                     } catch (error) {
                         console.error(`Failed to send to users ${u._id}:`, error);

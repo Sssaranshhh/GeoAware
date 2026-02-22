@@ -6,14 +6,19 @@ const messageSchema = new mongoose.Schema({
         ref: "User"
     },
     content: {
-        type: String,
+        type: mongoose.Schema.Types.Mixed,
         required: true
     },
     receiverType: {
         type: String,
         required: true
     },
-    
+    read: {
+        type: Boolean,
+        default: false 
+    }
+}, {
+    timestamps: true
 })
 
 const Message = mongoose.model('Message', messageSchema);

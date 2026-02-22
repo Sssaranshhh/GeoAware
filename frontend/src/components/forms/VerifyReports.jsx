@@ -14,7 +14,9 @@ const VerifyReports = ({ws}) => {
         type: "Message",
         userType: "Official",
         isAuthenticated: true,
-        content: message
+        content: message,
+        receiverType: "Admin",
+        read: false
       }))
     } else {
       ws.send(JSON.stringify({
@@ -22,7 +24,9 @@ const VerifyReports = ({ws}) => {
         type: "Message",
         userType: "Official",
         isAuthenticated: false,
-        content: message
+        content: message,
+        receiverType: "Admin",
+        read: false
       }))
     }
     
