@@ -151,9 +151,11 @@ export default function FloodRouteNavigator() {
           marginTop: "10px",
           padding: "10px 12px",
           borderRadius: "8px",
-          background: "#111827",
-          color: "white",
+          background: "var(--bg-secondary)",
+          color: "var(--text-primary)",
           fontSize: "14px",
+          border: "1px solid var(--border-light)",
+          transition: "var(--transition)"
         }}
       >
         <div>
@@ -184,9 +186,10 @@ export default function FloodRouteNavigator() {
               marginTop: "6px",
               padding: "8px",
               borderRadius: "6px",
-              border: "1px solid #374151",
-              background: "#020617",
-              color: "white",
+              border: "1px solid var(--border-light)",
+              background: "var(--bg-primary)",
+              color: "var(--text-primary)",
+              transition: "var(--transition)"
             }}
           />
         </label>
@@ -250,11 +253,12 @@ export default function FloodRouteNavigator() {
             marginTop: "10px",
             padding: "6px 10px",
             borderRadius: "6px",
-            border: "1px solid #4b5563",
-            background: "#020617",
-            color: "white",
+            border: "1px solid var(--border-light)",
+            background: "var(--bg-secondary)",
+            color: "var(--accent-blue)",
             fontSize: "13px",
             cursor: "pointer",
+            transition: "var(--transition)"
           }}
         >
           ➕ Add waypoint
@@ -309,15 +313,16 @@ export default function FloodRouteNavigator() {
             borderRadius: "8px",
             border: "none",
             cursor: backendOnline ? "pointer" : "not-allowed",
-            background: backendOnline ? "#22c55e" : "#4b5563",
-            color: "white",
+            background: backendOnline ? "var(--accent-blue)" : "var(--bg-tertiary)",
+            color: backendOnline ? "white" : "var(--text-tertiary)",
             fontWeight: 600,
+            transition: "var(--transition)"
           }}
         >
           {loading ? "Analyzing route…" : "Analyze Flood Risk Along Route"}
         </button>
         {!backendOnline && (
-          <p style={{ fontSize: "12px", color: "#f87171", marginTop: "4px" }}>
+          <p style={{ fontSize: "12px", color: "var(--status-danger)", marginTop: "4px" }}>
             Start your flood FastAPI server first (uvicorn main:app --reload).
           </p>
         )}
@@ -330,9 +335,11 @@ export default function FloodRouteNavigator() {
             marginTop: "16px",
             padding: "10px 12px",
             borderRadius: "8px",
-            background: "#7f1d1d",
-            color: "white",
+            background: "rgba(239, 68, 68, 0.2)",
+            color: "var(--status-danger)",
             fontSize: "13px",
+            border: "1px solid var(--status-danger)",
+            transition: "var(--transition)"
           }}
         >
           <strong>Error: </strong>
@@ -340,25 +347,192 @@ export default function FloodRouteNavigator() {
         </div>
       )}
 
-      {/* Raw JSON result */}
+      {/* Formatted result */}
       {result && (
         <div
           style={{
             marginTop: "20px",
-            padding: "12px",
+            padding: "16px",
             borderRadius: "8px",
-            background: "#020617",
-            color: "#e5e7eb",
-            fontSize: "13px",
-            overflowX: "auto",
+            background: "var(--bg-secondary)",
+            border: "1px solid var(--border-light)",
+            color: "var(--text-primary)",
+            transition: "var(--transition)"
           }}
         >
-          <div style={{ marginBottom: "6px", fontWeight: 600 }}>
-            API response
-          </div>
-          <pre style={{ margin: 0, whiteSpace: "pre-wrap" }}>
-            {JSON.stringify(result, null, 2)}
-          </pre>
+          <h3 style={{ marginTop: 0, marginBottom: "16px" }}>
+            ✅ Route Analysis Complete
+          </h3>
+
+          {/* Safe Route Indicator */}
+          {result.safe_route !== undefined && (
+            <div
+              style={{
+                background: "white",
+                padding: "12px",
+                borderRadius: "6px",
+                marginBottom: "12px",
+              }}
+            >
+              <strong>🛣️ Safe Route:</strong>{" "}
+              <span
+                style={{
+                  color: result.safe_route ? "#16a34a" : "#b91c1c",
+                  fontWeight: 600,
+                  fontSize: "16px",
+                }}
+              >
+                {result.safe_route ? "✅ YES - Safe to take" : "❌ NO - High risk"}
+              </span>
+            </div>
+          )}
+
+          {/* Risk Level */}
+          {result.risk_level && (
+            <div
+              style={{
+                background: "white",
+                padding: "12px",
+                borderRadius: "6px",
+                marginBottom: "12px",
+              }}
+            >
+              <strong>📊 Overall Risk Level:</strong>{" "}
+              <span
+                style={{
+                  background:
+                    result.risk_level === "High"
+                      ? "#dc2626"
+                      : result.risk_level === "Medium"
+                      ? "#ea580c"
+                      : "#16a34a",
+                  color: "white",
+                  padding: "4px 8px",
+                  borderRadius: "4px",
+                  fontWeight: 600,
+                  fontSize: "14px",
+                }}
+              >
+                {result.risk_level}
+              </span>
+            </div>
+          )}
+
+          {/* Risk Description */}
+          {result.risk_description && (
+            <div
+              style={{
+                background: "var(--bg-tertiary)",
+                padding: "12px",
+                borderRadius: "6px",
+                marginBottom: "12px",
+                border: "1px solid var(--border-light)",
+                transition: "var(--transition)"
+              }}
+            >
+              <strong style={{ color: "var(--text-primary)" }}>\ud83d\udde3 Description:</strong>
+              <p style={{ marginTop: "6px", color: "var(--text-secondary)" }}>{result.risk_description}</p>
+            </div>
+          )}
+
+          {/* Waypoint Risks */}
+          {result.waypoint_risks && Array.isArray(result.waypoint_risks) && (
+            <div
+              style={{
+                background: "white",
+                padding: "12px",
+                borderRadius: "6px",
+                marginBottom: "12px",
+              }}
+            >
+              <strong>📍 Waypoint Risks ({result.waypoint_risks.length}):</strong>
+              <div style={{ marginTop: "8px", maxHeight: "400px", overflowY: "auto" }}>
+                {result.waypoint_risks.map((wp, idx) => (
+                  <div
+                    key={idx}
+                    style={{
+                      padding: "8px",
+                      marginBottom: "6px",
+                      background: "#f3f4f6",
+                      borderRadius: "4px",
+                      fontSize: "13px",
+                    }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <strong>Waypoint #{idx}</strong>
+                      <span
+                        style={{
+                          background:
+                            wp.risk_level === "High"
+                              ? "#dc2626"
+                              : wp.risk_level === "Medium"
+                              ? "#ea580c"
+                              : "#16a34a",
+                          color: "white",
+                          padding: "2px 8px",
+                          borderRadius: "3px",
+                          fontSize: "11px",
+                          fontWeight: 600,
+                        }}
+                      >
+                        {wp.risk_level}
+                      </span>
+                    </div>
+                    {wp.location && (
+                      <div style={{ fontSize: "11px", color: "#525252", marginTop: "4px" }}>
+                        📍 {wp.location.latitude.toFixed(4)}, {wp.location.longitude.toFixed(4)}
+                      </div>
+                    )}
+                    {wp.details && (
+                      <div style={{ fontSize: "11px", color: "#525252", marginTop: "4px" }}>
+                        {Object.entries(wp.details).map(([key, val]) => (
+                          <div key={key}><strong>{key}:</strong> {typeof val === "number" ? val.toFixed(2) : val}</div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Distance Info */}
+          {result.total_distance !== undefined && (
+            <div
+              style={{
+                background: "var(--bg-tertiary)",
+                padding: "12px",
+                borderRadius: "6px",
+                marginBottom: "12px",
+                border: "1px solid var(--border-light)",
+                transition: "var(--transition)"
+              }}
+            >
+              <strong style={{ color: "var(--text-primary)" }}>\ud83d\udccf Distance:</strong> <span style={{ color: "var(--accent-blue)" }}>{result.total_distance.toFixed(2)} km</span>
+            </div>
+          )}
+
+          {/* Recommendations */}
+          {result.recommendations && Array.isArray(result.recommendations) && result.recommendations.length > 0 && (
+            <div
+              style={{
+                background: "rgba(59, 130, 246, 0.1)",
+                padding: "12px",
+                borderRadius: "6px",
+                border: "1px solid var(--accent-blue)",
+                transition: "var(--transition)"
+              }}
+            >
+              <strong style={{ color: "var(--accent-blue)" }}>\ud83d\udca1 Recommendations:</strong>
+              <ul style={{ marginTop: "8px", paddingLeft: "20px", color: "var(--text-secondary)" }}>
+                {result.recommendations.map((rec, idx) => (
+                  <li key={idx} style={{ marginBottom: "4px" }}>
+                    {rec}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -371,18 +545,20 @@ const inputStyle = {
   marginTop: "4px",
   padding: "6px 8px",
   borderRadius: "6px",
-  border: "1px solid #4b5563",
-  background: "#020617",
-  color: "white",
+  border: "1px solid var(--border-light)",
+  background: "var(--bg-primary)",
+  color: "var(--text-primary)",
   minWidth: "160px",
+  transition: "var(--transition)"
 };
 
 const smallButtonStyle = {
   padding: "4px 8px",
   borderRadius: "6px",
   border: "none",
-  background: "#b91c1c",
+  background: "var(--status-danger)",
   color: "white",
   cursor: "pointer",
   fontSize: "12px",
+  transition: "var(--transition)"
 };
