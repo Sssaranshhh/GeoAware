@@ -1,4 +1,6 @@
 import os
+import logging
+import math
 import numpy as np
 import pandas as pd
 from fastapi import FastAPI, HTTPException
@@ -23,7 +25,7 @@ CYCLONE_MODEL_FILE = os.path.join(MODEL_DIR, "cyclone_prediction_model.pkl")
 EARTHQUAKE_MODEL_FILE = os.path.join(MODEL_DIR, "earthquake_risk_model.pkl")
 FLOOD_MODEL_FILE = os.path.join(MODEL_DIR, "flood_prediction_pipeline.pkl")
 FORESTFIRE_MODEL_FILE = os.path.join(MODEL_DIR, "forestfire_prediction_model.pkl")
-MOSDAC_URL = "http://127.0.0.1:8001"
+MOSDAC_URL = os.getenv("MOSDAC_URL", "http://127.0.0.1:8001")
 
 # -----------------------
 # Load model function
@@ -33,6 +35,9 @@ def load_model(path):
         print(f"⚠️ Warning: model not found at {path}")
         return None
     return joblib.load(path)
+
+
+logger = logging.getLogger(__name__)
 
 
 # -----------------------
@@ -409,9 +414,9 @@ def analyze_route(data: RouteAnalysisRequest):
             # Calculate distance between consecutive points (simple Euclidean)
             if i > 0:
                 prev = data.points[i-1]
-                lat_diff = (point.latitude - prev.latitude) * 111  # ~111 km per degree latitude
-                lon_diff = (point.longitude - prev.longitude) * 111 * abs(__import__('math').cos(__import__('math').radians(point.latitude)))
-                segment_dist = (__import__('math').sqrt(lat_diff**2 + lon_diff**2))
+                lat_diff = (point.latitude - prev.latitude) * 111
+                lon_diff = (point.longitude - prev.longitude) * 111 * abs(math.cos(math.radians(point.latitude)))
+                segment_dist = math.sqrt(lat_diff**2 + lon_diff**2)
                 total_distance += segment_dist
         
         # Calculate average AQI
@@ -522,4 +527,4 @@ async def mosdac_health():
 # -----------------------
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=int(os.getenv("PORT", 8000)), reload=True)
