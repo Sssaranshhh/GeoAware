@@ -48,7 +48,7 @@ export default function MapView() {
     return () => {
       try {
         if (mapRef.current) mapRef.current.remove();
-      } catch (e) {}
+      } catch (e) { }
     };
   }, []);
 
@@ -121,7 +121,7 @@ export default function MapView() {
             .addTo(mapRef.current)
             .bindPopup("Your Location");
         },
-        () => {},
+        () => { },
       );
     }
   }
@@ -586,7 +586,7 @@ export default function MapView() {
             poly._path.setAttribute("stroke", color);
             poly._path.style.stroke = color;
           }
-        } catch (e) {}
+        } catch (e) { }
       });
     };
     requestAnimationFrame(() => {
@@ -677,7 +677,7 @@ export default function MapView() {
         mapRef.current.removeLayer(heatRef.current);
         heatRef.current = null;
       }
-    } catch (e) {}
+    } catch (e) { }
 
     const data = earthquakesRef.current || [];
     if (data.length === 0) return;
@@ -1040,9 +1040,54 @@ export default function MapView() {
         .map-container .leaflet-control-zoom a:hover {
           background: rgba(239,68,68,0.3) !important;
         }
+        /* Push right-side controls below the top bar */
+        .map-container .leaflet-top.leaflet-right {
+          top: 60px !important;
+        }
+        /* ── Layer switcher (Street / Satellite) ── */
+        .map-container .leaflet-control-layers {
+          background: rgba(11,15,26,0.92) !important;
+          border: 1px solid rgba(255,255,255,0.15) !important;
+          border-radius: 10px !important;
+          backdrop-filter: blur(14px) !important;
+          box-shadow: 0 4px 24px rgba(0,0,0,0.5) !important;
+          padding: 6px 2px !important;
+          min-width: 130px !important;
+        }
         .map-container .leaflet-control-layers-toggle {
-          background-color: rgba(15,20,35,0.9) !important;
-          border: 1px solid rgba(255,255,255,0.1) !important;
+          background-color: rgba(11,15,26,0.92) !important;
+          border: 1px solid rgba(255,255,255,0.15) !important;
+          border-radius: 10px !important;
+          backdrop-filter: blur(14px) !important;
+          box-shadow: 0 4px 24px rgba(0,0,0,0.5) !important;
+          width: 36px !important;
+          height: 36px !important;
+        }
+        .map-container .leaflet-control-layers-base label,
+        .map-container .leaflet-control-layers-overlays label {
+          color: rgba(255,255,255,0.85) !important;
+          font-size: 13px !important;
+          font-weight: 500 !important;
+          padding: 4px 12px !important;
+          border-radius: 6px !important;
+          margin: 2px 4px !important;
+          display: flex !important;
+          align-items: center !important;
+          gap: 6px !important;
+          cursor: pointer !important;
+          transition: background 0.15s !important;
+        }
+        .map-container .leaflet-control-layers-base label:hover,
+        .map-container .leaflet-control-layers-overlays label:hover {
+          background: rgba(99,102,241,0.2) !important;
+        }
+        .map-container .leaflet-control-layers-base label input:checked + span,
+        .map-container .leaflet-control-layers-base label:has(input:checked) {
+          color: #818cf8 !important;
+        }
+        .map-container .leaflet-control-layers-separator {
+          border-color: rgba(255,255,255,0.1) !important;
+          margin: 4px 0 !important;
         }
         input[type=range] {
           -webkit-appearance: none;

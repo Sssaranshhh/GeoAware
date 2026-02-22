@@ -1,10 +1,10 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useAppContext } from "../Context/AppContext";
 import StatsCard from "../components/dashboard/StatsCard";
-import {Bell} from "lucide-react"
-import { Link, useNavigate } from "react-router-dom";
+import { Bell } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-const DashboardPage = ({ message }) => {
+const DashboardPage = ({ message, darkMode }) => {
   const { role, userName } = useAppContext();
   const navigate = useNavigate();
 
@@ -15,22 +15,29 @@ const DashboardPage = ({ message }) => {
     { label: "Community Rank", value: "#128", icon: "🏆" },
   ];
 
-  const handleInbox = ()=>{
-    navigate(`/inbox`)
-  }
-
   return (
     <div className="space-y-8">
       {/* Welcome Section */}
       <div>
-        <div className="flex justify-between">
-        <h1 className="text-3xl font-bold text-slate-800">
-          Welcome back, {userName}! 👋
-        </h1>
-        <button onClick={handleInbox}><Bell /></button>
-
+        <div className="flex justify-between items-center">
+          <h1
+            className="text-3xl font-bold"
+            style={{ color: darkMode ? "#ededed" : "#1e293b" }}
+          >
+            Welcome back, {userName}! 👋
+          </h1>
+          <button
+            onClick={() => navigate("/inbox")}
+            style={{ color: darkMode ? "#b3b3b3" : "#475569" }}
+            className="hover:opacity-70 transition-opacity"
+          >
+            <Bell />
+          </button>
         </div>
-        <p className="text-slate-600 mt-1">
+        <p
+          className="mt-1"
+          style={{ color: darkMode ? "#8a8a8a" : "#64748b" }}
+        >
           {role === "user" && "Stay informed about disasters in your area"}
           {role === "responder" && "Review and verify emergency reports"}
           {role === "admin" && "Manage and broadcast emergency alerts"}
@@ -45,35 +52,59 @@ const DashboardPage = ({ message }) => {
             label={stat.label}
             value={stat.value}
             icon={stat.icon}
+            darkMode={darkMode}
           />
         ))}
       </div>
 
-      {/* Weather Card (Improved Compact Version) */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+      {/* Weather Card */}
+      <div
+        className="rounded-2xl border shadow-sm p-6"
+        style={{
+          backgroundColor: darkMode ? "#2a2a2a" : "#ffffff",
+          borderColor: darkMode ? "#3a3a3a" : "#e2e8f0",
+        }}
+      >
         <div className="flex justify-between items-center gap-6 flex-wrap">
-          {/* Title */}
           <div>
-            <div className="text-base font-semibold text-slate-700">
+            <div
+              className="text-base font-semibold"
+              style={{ color: darkMode ? "#ededed" : "#334155" }}
+            >
               Current Weather
             </div>
-            <div className="text-xs text-slate-500 mt-1">Updated just now</div>
+            <div
+              className="text-xs mt-1"
+              style={{ color: darkMode ? "#8a8a8a" : "#94a3b8" }}
+            >
+              Updated just now
+            </div>
           </div>
 
-          {/* Weather Data */}
           <div className="flex items-center gap-4">
             <div className="text-5xl">🌤️</div>
             <div className="text-right">
-              <div className="text-4xl font-extrabold text-indigo-600 leading-none">
+              <div className="text-4xl font-extrabold text-indigo-400 leading-none">
                 28°C
               </div>
-              <div className="text-sm text-slate-600 font-medium">
+              <div
+                className="text-sm font-medium"
+                style={{ color: darkMode ? "#b3b3b3" : "#475569" }}
+              >
                 Partly Cloudy
               </div>
-              <div className="text-xs text-slate-500 mt-1">
+              <div
+                className="text-xs mt-1"
+                style={{ color: darkMode ? "#8a8a8a" : "#94a3b8" }}
+              >
                 Humidity: 65% • Wind: 12 km/h
               </div>
-              <div className="text-xs text-slate-500">Pressure: 1013 hPa</div>
+              <div
+                className="text-xs"
+                style={{ color: darkMode ? "#8a8a8a" : "#94a3b8" }}
+              >
+                Pressure: 1013 hPa
+              </div>
             </div>
           </div>
         </div>

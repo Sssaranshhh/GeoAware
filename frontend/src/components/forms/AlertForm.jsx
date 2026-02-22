@@ -1,30 +1,25 @@
 import React, { useState } from "react";
 
-const AlertForm = ({ ws }) => {
+const AlertForm = ({ ws, darkMode }) => {
   const [severity, setSeverity] = useState("");
   const [location, setLocation] = useState("");
   const [disasterType, setDisasterType] = useState(null);
   const [contact, setContact] = useState(null);
   const [message, setMessage] = useState("");
-  const userId = localStorage.getItem("userId")
+  const userId = localStorage.getItem("userId");
 
   const handleSubmit = (e) => {
-    const data = {
-      disasterType: disasterType,
-      location: location,
-      severity: severity,
-      message: message,
-      contact: contact
-    }
+    e.preventDefault();
+    const data = { disasterType, location, severity, message, contact };
     ws.send(JSON.stringify({
       type: "Message",
       userType: "User",
       content: data,
       userId: userId,
       receiverType: "Official",
-      read: false
-    }))
-    alert("Alert sent to officials ✅")
+      read: false,
+    }));
+    alert("Alert sent to officials ✅");
   };
 
   const severityLevels = [
@@ -34,24 +29,42 @@ const AlertForm = ({ ws }) => {
     { key: "Critical", active: "bg-red-500 text-white border-red-500" },
   ];
 
+  const cardBg = darkMode ? "#242424" : "#ffffff";
+  const cardBorder = darkMode ? "#3a3a3a" : "#e2e8f0";
+  const labelColor = darkMode ? "#b3b3b3" : "#374151";
+  const inputStyle = {
+    width: "100%",
+    padding: "12px",
+    borderRadius: "8px",
+    border: `1px solid ${darkMode ? "#3a3a3a" : "#d1d5db"}`,
+    backgroundColor: darkMode ? "#2a2a2a" : "#ffffff",
+    color: darkMode ? "#ededed" : "#111827",
+    outline: "none",
+    transition: "border-color 0.2s",
+  };
+  const hintColor = darkMode ? "#6b7280" : "#6b7280";
+  const inactiveBtnStyle = {
+    backgroundColor: darkMode ? "#2a2a2a" : "#ffffff",
+    color: darkMode ? "#b3b3b3" : "#374151",
+    borderColor: darkMode ? "#4a4a4a" : "#d1d5db",
+  };
 
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-white p-6 rounded-2xl shadow-md max-w-3xl mx-auto"
+      className="p-6 rounded-2xl shadow-md max-w-3xl mx-auto"
+      style={{ backgroundColor: cardBg, border: `1px solid ${cardBorder}` }}
     >
-      <div className="space-y-4">
+      <div className="space-y-5">
+        {/* Disaster Type */}
         <div>
-          <label className="block font-semibold text-gray-700 mb-2">
+          <label className="block font-semibold mb-2" style={{ color: labelColor }}>
             Disaster Type
           </label>
           <select
-            name="type"
             required
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 transition"
-            onChange={(e) => {
-              setDisasterType(e.target.value)
-            }}
+            style={inputStyle}
+            onChange={(e) => setDisasterType(e.target.value)}
           >
             <option value="">Select disaster type...</option>
             <option value="landslide">Landslide</option>
@@ -63,8 +76,9 @@ const AlertForm = ({ ws }) => {
           </select>
         </div>
 
+        {/* Severity */}
         <div>
-          <label className="block font-semibold text-gray-700 mb-2">
+          <label className="block font-semibold mb-2" style={{ color: labelColor }}>
             Severity Level
           </label>
           <div className="grid grid-cols-4 gap-2">
@@ -73,10 +87,9 @@ const AlertForm = ({ ws }) => {
                 key={level.key}
                 type="button"
                 onClick={() => setSeverity(level.key)}
-                className={`p-3 rounded-lg font-semibold border-2 transition ${severity === level.key
-                    ? level.active
-                    : "bg-white text-gray-700 border-gray-300 hover:border-gray-400"
+                className={`p-3 rounded-lg font-semibold border-2 transition ${severity === level.key ? level.active : ""
                   }`}
+                style={severity === level.key ? {} : inactiveBtnStyle}
               >
                 {level.key}
               </button>
@@ -84,52 +97,48 @@ const AlertForm = ({ ws }) => {
           </div>
         </div>
 
+        {/* Location */}
         <div>
-          <label className="block font-semibold text-gray-700 mb-2">
+          <label className="block font-semibold mb-2" style={{ color: labelColor }}>
             Location
           </label>
           <input
-            name="location"
             type="text"
             required
             placeholder="Address or landmark (e.g., Main Street, Near City Hall)"
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 transition"
-            onChange={(e) => {
-              setLocation(e.target.value)
-            }}
+            style={inputStyle}
+            onChange={(e) => setLocation(e.target.value)}
           />
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm mt-1" style={{ color: hintColor }}>
             📍 Auto-detected: Current Location
           </p>
         </div>
 
+        {/* Description */}
         <div>
-          <label className="block font-semibold text-gray-700 mb-2">
+          <label className="block font-semibold mb-2" style={{ color: labelColor }}>
             Description
           </label>
           <textarea
-            name="description"
             required
             rows="4"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Describe what you're witnessing in detail..."
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 transition resize-none"
+            style={{ ...inputStyle, resize: "none" }}
           />
         </div>
 
+        {/* Contact */}
         <div>
-          <label className="block font-semibold text-gray-700 mb-2">
+          <label className="block font-semibold mb-2" style={{ color: labelColor }}>
             Contact Number (Optional)
           </label>
           <input
-            name="contact"
             type="tel"
             placeholder="+91 XXXXX XXXXX"
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 transition"
-            onChange={(e) => {
-              setContact(Number(e.target.value))
-            }}
+            style={inputStyle}
+            onChange={(e) => setContact(Number(e.target.value))}
           />
         </div>
 

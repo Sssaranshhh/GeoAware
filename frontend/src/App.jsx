@@ -203,21 +203,21 @@ const App = () => {
           <Route path="flood-routing" element={<FloodRouteNavigator darkMode={darkMode} />} />
           <Route path="flood-prediction" element={<FloodPredict darkMode={darkMode} />} />
           <Route path="mosdac-prediction" element={<MosdacPredict darkMode={darkMode} />} />
-          <Route path="inbox" element={<Inbox message={filteredMessage} />} />
+          <Route path="inbox" element={<Inbox message={filteredMessage} darkMode={darkMode} />} />
 
           {/* User-specific routes */}
           {role === "user" && (
-            <Route path="alert" element={<AlertPage ws={ws} />} />
+            <Route path="alert" element={<AlertPage ws={ws} darkMode={darkMode} />} />
           )}
 
           {/* Responder-specific routes */}
           {role === "responder" && (
-            <Route path="verify" element={<VerifyPage ws={ws} />} />
+            <Route path="verify" element={<VerifyPage ws={ws} darkMode={darkMode} />} />
           )}
 
           {/* Admin-specific routes */}
           {role === "admin" && (
-            <Route path="broadcast" element={<BroadcastPage ws={ws} />} />
+            <Route path="broadcast" element={<BroadcastPage ws={ws} darkMode={darkMode} />} />
           )}
 
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
