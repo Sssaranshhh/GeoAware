@@ -202,7 +202,7 @@ const App = () => {
   // Show loading spinner while checking authentication
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+      <div className="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center">
           <div className="text-6xl mb-4 animate-bounce">🌍</div>
           <div className="text-2xl font-bold text-slate-700">
@@ -216,7 +216,7 @@ const App = () => {
   // Redirect to auth if not logged in
   if (!isLoggedIn) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      <div className="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-indigo-100">
         <Routes>
           <Route path="/auth" element={<AuthPage />} />
           <Route path="*" element={<Navigate to="/auth" replace />} />
