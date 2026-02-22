@@ -21,11 +21,10 @@ import AppLayout from "./components/common/AppLayout";
 import Inbox from "./pages/Inbox";
 
 const App = () => {
-  const { isLoggedIn, role, loading } = useAppContext();
+  const { isLoggedIn, role, loading, userId, mapRoleToUserType } = useAppContext();
   const [ws, setWs] = useState(null);
   const [message, setMessage] = useState(null);
-  const userId = localStorage.getItem("userId");
-  const userType = localStorage.getItem("userType");
+  const userType = mapRoleToUserType(role);
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem("darkMode");
     return saved ? JSON.parse(saved) : false;
@@ -138,8 +137,14 @@ const App = () => {
   }, [darkMode]);
 
   useEffect(() => {
+    // Don't connect until we have a real userId (i.e. user is logged in)
+    if (!userId) {
+      setWs(null);
+      return;
+    }
+
     const WS = new WebSocket("ws://localhost:3000");
-    console.log(userId, userType);
+    console.log("WS connecting for user:", userId, userType);
     setWs(WS);
     WS.onopen = () => {
       WS.send(JSON.stringify({
@@ -155,7 +160,7 @@ const App = () => {
       if (receivedMessage.to) console.log("incoming role", receivedMessage.to);
     };
     return () => WS.close();
-  }, []);
+  }, [userId, userType]);
 
   if (loading) {
     return (

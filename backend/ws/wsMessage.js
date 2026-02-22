@@ -1,7 +1,9 @@
+//wsMessage.js: 3-4 lines added
 import mongoose from "mongoose";
 import Message from "../models/MessageModel.js";
 import User from "../models/UserModel.js";
 import { clients } from "../server.js";
+import { sendAlertEmails } from "../utils/emailService.js";
 
 export const wsMessage = async (message) => {
     console.log("message", message)
@@ -60,7 +62,6 @@ export const wsMessage = async (message) => {
             })
             break;
         case "Admin":
-            console.log("I am an Adminn", message)
             const users = await User.find({
                 userType: "User"
             })
@@ -78,6 +79,8 @@ export const wsMessage = async (message) => {
                     }
                 }
             })
+            // Send parallel emails in the background (Non-blocking)
+            sendAlertEmails(message.content);
             break;
     }
 }
