@@ -31,7 +31,7 @@ const Field = memo(function Field({ label, name, min, max, value, onChange }) {
 });
 
 export default function FloodPredict() {
-  const API = "http://localhost:8000/api/v1/predict";
+  const API = `${import.meta.env.VITE_ML_URL}/api/v1/predict`;
 
   const [form, setForm] = useState({
     rainfall: "",
@@ -206,7 +206,7 @@ export default function FloodPredict() {
           <h2 style={{ marginTop: 0, marginBottom: 15, fontSize: 20, color: "var(--accent-blue)" }}>
             🌊 Prediction Result
           </h2>
-          
+
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 15, marginBottom: 15 }}>
             <div style={{ background: "var(--bg-tertiary)", padding: 12, borderRadius: 6, border: "1px solid var(--border-light)", transition: "var(--transition)" }}>
               <div style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 5 }}>Risk Level</div>

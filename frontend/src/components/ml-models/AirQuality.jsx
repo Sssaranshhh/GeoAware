@@ -3,7 +3,7 @@ import axios from "axios";
 
 export default function AirQuality() {
   // Backend URL (change if deployed later)
-  const API = "http://localhost:8000";
+  const API = import.meta.env.VITE_ML_URL;
 
   const [backendOnline, setBackendOnline] = useState(false);
   const [modelsLoaded, setModelsLoaded] = useState(false);
@@ -176,7 +176,7 @@ export default function AirQuality() {
               }}
             >
               <h3 style={{ marginTop: 0 }}>📊 Location Analysis Results</h3>
-              
+
               {locationResult.location && (
                 <div style={{ background: "white", padding: "12px", borderRadius: "6px", marginBottom: "12px" }}>
                   <p>
@@ -190,7 +190,7 @@ export default function AirQuality() {
                   )}
                 </div>
               )}
-              
+
               {locationResult.aqi && (
                 <div style={{ background: "white", padding: "12px", borderRadius: "6px", marginBottom: "12px" }}>
                   <p>
@@ -201,10 +201,10 @@ export default function AirQuality() {
                           locationResult.aqi.aqi > 200
                             ? "#dc2626"
                             : locationResult.aqi.aqi > 150
-                            ? "#ea580c"
-                            : locationResult.aqi.aqi > 100
-                            ? "#eab308"
-                            : "#22c55e",
+                              ? "#ea580c"
+                              : locationResult.aqi.aqi > 100
+                                ? "#eab308"
+                                : "#22c55e",
                         color: "white",
                         padding: "4px 12px",
                         borderRadius: "4px",
@@ -215,7 +215,7 @@ export default function AirQuality() {
                       {locationResult.aqi.category}
                     </span>
                   </p>
-                  
+
                   <div style={{ marginTop: "10px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
                     <div>
                       <strong>PM2.5:</strong> <span style={{ fontSize: "14px" }}>{locationResult.aqi.pm25} µg/m³</span>
@@ -224,7 +224,7 @@ export default function AirQuality() {
                       <strong>PM10:</strong> <span style={{ fontSize: "14px" }}>{locationResult.aqi.pm10} µg/m³</span>
                     </div>
                   </div>
-                  
+
                   {locationResult.aqi.pollutants && Object.keys(locationResult.aqi.pollutants).length > 0 && (
                     <div style={{ marginTop: "10px" }}>
                       <strong>Pollutants:</strong>
@@ -237,7 +237,7 @@ export default function AirQuality() {
                       </div>
                     </div>
                   )}
-                  
+
                   {locationResult.aqi.effects && (
                     <div style={{ marginTop: "10px", paddingTop: "10px", borderTop: "1px solid #ddd" }}>
                       <strong>Health Effects:</strong>
@@ -325,25 +325,25 @@ export default function AirQuality() {
               }}
             >
               <h3 style={{ marginTop: 0 }}>🛣️ Route Analysis Results</h3>
-              
+
               {routeResult.route_summary && (
                 <div style={{ background: darkMode ? "var(--bg-tertiary)" : "white", padding: "12px", borderRadius: "8px", marginBottom: "12px", border: `1px solid ${darkMode ? "var(--border-light)" : "#e0e7ff"}`, transition: "var(--transition)", color: darkMode ? "var(--text-primary)" : "#000" }}>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
                     <div>
-                      <strong style={{ color: darkMode ? "var(--text-secondary)" : "#666" }}>📏 Total Distance:</strong> 
+                      <strong style={{ color: darkMode ? "var(--text-secondary)" : "#666" }}>📏 Total Distance:</strong>
                       <p style={{ marginTop: "4px", fontSize: "14px", fontWeight: "bold", color: darkMode ? "var(--accent-blue-light)" : "#16a34a" }}>
                         {routeResult.route_summary.total_distance?.toFixed(2)} km
                       </p>
                     </div>
                     <div>
-                      <strong style={{ color: darkMode ? "var(--text-secondary)" : "#666" }}>📊 Average AQI:</strong> 
+                      <strong style={{ color: darkMode ? "var(--text-secondary)" : "#666" }}>📊 Average AQI:</strong>
                       <p style={{ marginTop: "4px", fontSize: "14px", fontWeight: "bold", color: darkMode ? "var(--accent-blue-light)" : "#16a34a" }}>
                         {routeResult.route_summary.avg_aqi?.toFixed(1)}
                       </p>
                     </div>
                   </div>
                   <div style={{ marginTop: "10px" }}>
-                    <strong style={{ color: darkMode ? "var(--text-primary)" : "#000" }}>Risk Level:</strong> 
+                    <strong style={{ color: darkMode ? "var(--text-primary)" : "#000" }}>Risk Level:</strong>
                     <span
                       style={{
                         marginLeft: "8px",
@@ -351,11 +351,11 @@ export default function AirQuality() {
                           routeResult.route_summary.risk_level === "High"
                             ? darkMode ? "rgba(239, 68, 68, 0.2)" : "#fecaca"
                             : routeResult.route_summary.risk_level === "Medium"
-                            ? darkMode ? "rgba(249, 115, 22, 0.2)" : "#fed7aa"
-                            : darkMode ? "rgba(34, 197, 94, 0.2)" : "#bbf7d0",
+                              ? darkMode ? "rgba(249, 115, 22, 0.2)" : "#fed7aa"
+                              : darkMode ? "rgba(34, 197, 94, 0.2)" : "#bbf7d0",
                         color: routeResult.route_summary.risk_level === "High"
-                            ? darkMode ? "var(--status-danger)" : "#dc2626"
-                            : routeResult.route_summary.risk_level === "Medium"
+                          ? darkMode ? "var(--status-danger)" : "#dc2626"
+                          : routeResult.route_summary.risk_level === "Medium"
                             ? darkMode ? "var(--status-warning)" : "#ea580c"
                             : darkMode ? "var(--status-success)" : "#16a34a",
                         padding: "4px 10px",
@@ -374,7 +374,7 @@ export default function AirQuality() {
                   )}
                 </div>
               )}
-              
+
               {routeResult.points && routeResult.points.length > 0 && (
                 <div style={{ background: darkMode ? "var(--bg-tertiary)" : "white", padding: "12px", borderRadius: "8px", border: `1px solid ${darkMode ? "var(--border-color)" : "#ddd"}`, transition: "var(--transition)", color: darkMode ? "var(--text-primary)" : "#000" }}>
                   <strong style={{ color: darkMode ? "var(--text-primary)" : "#000" }}>📍 Waypoints ({routeResult.points.length}):</strong>
@@ -388,9 +388,8 @@ export default function AirQuality() {
                           margin: "4px 0",
                           borderRadius: "6px",
                           fontSize: "12px",
-                          borderLeft: `3px solid ${
-                            pt.aqi > 150 ? darkMode ? "var(--status-danger)" : "#dc2626" : pt.aqi > 100 ? darkMode ? "var(--status-warning)" : "#ea580c" : darkMode ? "var(--status-success)" : "#22c55e"
-                          }`,
+                          borderLeft: `3px solid ${pt.aqi > 150 ? darkMode ? "var(--status-danger)" : "#dc2626" : pt.aqi > 100 ? darkMode ? "var(--status-warning)" : "#ea580c" : darkMode ? "var(--status-success)" : "#22c55e"
+                            }`,
                           transition: "var(--transition)"
                         }}
                       >

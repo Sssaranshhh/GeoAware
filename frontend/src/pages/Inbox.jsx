@@ -203,7 +203,7 @@ const Inbox = ({ message, darkMode }) => {
 
   const getMessages = async () => {
     try {
-      const res = await fetch(`http://localhost:3000/getMessages/${userType}`);
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/getMessages/${userType}`);
       const response = await res.json();
       if (response.success) setAllMessages(response.data);
     } catch (error) {

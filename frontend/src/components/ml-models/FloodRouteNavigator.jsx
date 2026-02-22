@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 export default function FloodRouteNavigator() {
-  const API_BASE = "http://localhost:8000";
+  const API_BASE = import.meta.env.VITE_ML_URL;
   // Check your Swagger docs at /docs and update this if different
-  
+
   const DEFAULT_ROUTE_ENDPOINT = "/route/safe"; // e.g. "/routes/analyze", "/flood/route", etc.
 
   const [backendOnline, setBackendOnline] = useState(false);
@@ -404,8 +404,8 @@ export default function FloodRouteNavigator() {
                     result.risk_level === "High"
                       ? "#dc2626"
                       : result.risk_level === "Medium"
-                      ? "#ea580c"
-                      : "#16a34a",
+                        ? "#ea580c"
+                        : "#16a34a",
                   color: "white",
                   padding: "4px 8px",
                   borderRadius: "4px",
@@ -466,8 +466,8 @@ export default function FloodRouteNavigator() {
                             wp.risk_level === "High"
                               ? "#dc2626"
                               : wp.risk_level === "Medium"
-                              ? "#ea580c"
-                              : "#16a34a",
+                                ? "#ea580c"
+                                : "#16a34a",
                           color: "white",
                           padding: "2px 8px",
                           borderRadius: "3px",

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-const BASE_URL = "http://localhost:8000";
+const BASE_URL = import.meta.env.VITE_ML_URL;
 
 const emptyCyclone = {
   Sea_Surface_Temperature: "",
@@ -64,7 +64,7 @@ export default function MLplugin({ darkMode = false }) {
   const [flood, setFlood] = useState(emptyFlood);
   const [forestfire, setForestfire] = useState(emptyForestFire);
 
-  const [results, setResults] = useState({}); 
+  const [results, setResults] = useState({});
   const [loading, setLoading] = useState({});
 
   const handleChange = (setter) => (e) => {
@@ -139,7 +139,7 @@ export default function MLplugin({ darkMode = false }) {
       const data = r.data;
       let riskColor = "bg-green-50";
       let riskIcon = "✅";
-      
+
       if (data.risk === "High") {
         riskColor = "bg-red-50";
         riskIcon = "🚨";

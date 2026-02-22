@@ -143,7 +143,7 @@ const App = () => {
       return;
     }
 
-    const WS = new WebSocket("ws://localhost:3000");
+    const WS = new WebSocket(import.meta.env.VITE_WS_URL);
     console.log("WS connecting for user:", userId, userType);
     setWs(WS);
     WS.onopen = () => {

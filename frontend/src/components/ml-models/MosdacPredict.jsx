@@ -26,14 +26,14 @@ const Field = ({ label, name, min, max, value, onChange }) => (
 );
 
 export default function MosdacPredict() {
-  const API = "http://localhost:8000/mosdac/predict";
-  
+  const API = `${import.meta.env.VITE_ML_URL}/mosdac/predict`;
+
   // Detect dark mode from localStorage
   const [darkMode, setDarkMode] = React.useState(() => {
     const saved = localStorage.getItem("darkMode");
     return saved ? JSON.parse(saved) : false;
   });
-  
+
   // Listen for dark mode changes
   React.useEffect(() => {
     const handleStorageChange = () => {
@@ -302,8 +302,8 @@ export default function MosdacPredict() {
                   result.alert_level === "Red"
                     ? darkMode ? "#7f1d1d" : "#fee2e2"
                     : result.alert_level === "Yellow"
-                    ? darkMode ? "#78350f" : "#fef3c7"
-                    : darkMode ? "#15803d" : "#dcfce7",
+                      ? darkMode ? "#78350f" : "#fef3c7"
+                      : darkMode ? "#15803d" : "#dcfce7",
                 padding: 12,
                 borderRadius: 6,
                 border: "1px solid #ddd",
@@ -318,8 +318,8 @@ export default function MosdacPredict() {
                     result.alert_level === "Red"
                       ? "#991b1b"
                       : result.alert_level === "Yellow"
-                      ? "#92400e"
-                      : "#166534",
+                        ? "#92400e"
+                        : "#166534",
                 }}
               >
                 {result.alert_level}
@@ -470,7 +470,7 @@ export default function MosdacPredict() {
 // Bar Chart Component
 const BarChart = ({ labels, values, darkMode = false }) => {
   const maxValue = Math.max(...values, 1);
-  
+
   return (
     <div style={{ display: "flex", alignItems: "flex-end", gap: "6px", height: "220px", marginTop: "15px", padding: "10px", background: darkMode ? "var(--bg-secondary)" : "linear-gradient(to right, #f0f4ff, #f8faff)", borderRadius: "6px" }}>
       {labels && labels.map((label, idx) => (
@@ -503,7 +503,7 @@ const PieChart = ({ labels, values, darkMode = false }) => {
   const total = values.reduce((a, b) => a + b, 1);
   const colors = ["#ef4444", "#f97316", "#eab308", "#22c55e", "#0ea5e9", "#8b5cf6", "#ec4899", "#f43f5e"];
   let currentAngle = 0;
-  
+
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "15px", padding: "10px" }}>
       <svg width="200" height="200" viewBox="0 0 200 200" style={{ flex: "0 0 auto" }}>
@@ -511,21 +511,21 @@ const PieChart = ({ labels, values, darkMode = false }) => {
           const sliceAngle = (value / total) * 360;
           const startAngle = currentAngle;
           const endAngle = currentAngle + sliceAngle;
-          
+
           const startRad = (startAngle * Math.PI) / 180;
           const endRad = (endAngle * Math.PI) / 180;
-          
+
           const x1 = 100 + 80 * Math.cos(startRad);
           const y1 = 100 + 80 * Math.sin(startRad);
           const x2 = 100 + 80 * Math.cos(endRad);
           const y2 = 100 + 80 * Math.sin(endRad);
-          
+
           const largeArc = sliceAngle > 180 ? 1 : 0;
-          
+
           const path = `M 100 100 L ${x1} ${y1} A 80 80 0 ${largeArc} 1 ${x2} ${y2} Z`;
-          
+
           currentAngle += sliceAngle;
-          
+
           return (
             <path
               key={idx}
@@ -538,7 +538,7 @@ const PieChart = ({ labels, values, darkMode = false }) => {
           );
         })}
       </svg>
-      
+
       <div style={{ marginLeft: "20px", fontSize: "12px", color: darkMode ? "var(--text-primary)" : "#000" }}>
         {labels.map((label, idx) => (
           <div key={idx} style={{ marginBottom: "8px", display: "flex", alignItems: "center" }}>
@@ -559,15 +559,15 @@ const LineChart = ({ labels, values, darkMode = false }) => {
   const padding = 40;
   const plotHeight = height - 2 * padding;
   const plotWidth = width - 2 * padding;
-  
+
   const points = values.map((v, idx) => {
     const x = padding + (idx / (values.length - 1 || 1)) * plotWidth;
     const y = padding + plotHeight - (v / maxValue) * plotHeight;
     return { x, y };
   });
-  
+
   const pathData = points.map((p, idx) => (idx === 0 ? `M ${p.x} ${p.y}` : `L ${p.x} ${p.y}`)).join(" ");
-  
+
   return (
     <div style={{ overflowX: "auto", marginTop: "15px" }}>
       <svg width={width} height={height} style={{ background: darkMode ? "rgba(30, 41, 59, 0.5)" : "linear-gradient(to right, #f0f4ff, #f8faff)", borderRadius: "6px" }}>
@@ -575,28 +575,28 @@ const LineChart = ({ labels, values, darkMode = false }) => {
         {[...Array(5)].map((_, i) => (
           <line key={`h${i}`} x1={padding} y1={padding + (i * plotHeight) / 4} x2={width - padding} y2={padding + (i * plotHeight) / 4} stroke={darkMode ? "#475569" : "#ddd"} strokeDasharray="4" />
         ))}
-        
+
         {/* Area under line */}
         <path
           d={pathData + ` L ${points[points.length - 1].x} ${padding + plotHeight} L ${points[0].x} ${padding + plotHeight} Z`}
           fill="rgba(59, 130, 246, 0.1)"
         />
-        
+
         {/* Line */}
         <path d={pathData} stroke="#3b82f6" strokeWidth="3" fill="none" style={{ filter: "drop-shadow(0 2px 4px rgba(59, 130, 246, 0.3))" }} />
-        
+
         {/* Points */}
         {points.map((p, idx) => (
           <circle key={idx} cx={p.x} cy={p.y} r="5" fill="#3b82f6" stroke={darkMode ? "#0f172a" : "white"} strokeWidth="2" />
         ))}
-        
+
         {/* Y-axis labels */}
         {[...Array(5)].map((_, i) => (
           <text key={`yl${i}`} x={padding - 10} y={padding + (i * plotHeight) / 4 + 4} fontSize="11" textAnchor="end" fill={darkMode ? "#cbd5e1" : "#525252"}>
             {((1 - i / 4) * maxValue).toFixed(1)}
           </text>
         ))}
-        
+
         {/* X-axis labels */}
         {labels.map((label, idx) => (
           <text key={`xl${idx}`} x={points[idx].x} y={height - 10} fontSize="10" textAnchor="middle" fill={darkMode ? "#cbd5e1" : "#525252"} style={{ wordWrap: "break-word" }}>
