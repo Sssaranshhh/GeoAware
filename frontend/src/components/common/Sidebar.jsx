@@ -39,6 +39,12 @@ const Sidebar = ({ darkMode }) => {
       roles: ["admin"],
     },
     {
+      path: "/inbox",
+      label: "Inbox",
+      icon: "📬",
+      roles: ["user", "responder", "admin"],
+    },
+    {
       path: "/predict",
       label: "Disaster Prediction",
       icon: "🗓️",
@@ -73,14 +79,14 @@ const Sidebar = ({ darkMode }) => {
   const filteredItems = menuItems.filter((item) => item.roles.includes(role));
 
   return (
-    <aside 
+    <aside
       className="w-64 border-r p-6 flex flex-col gap-6 rounded-xl shadow-sm"
       style={{
         backgroundColor: darkMode ? "#202020" : "#ffffff",
         borderColor: darkMode ? "#2f2f2f" : "#e2e8f0",
       }}
     >
-      <h2 
+      <h2
         className="text-xl font-bold"
         style={{ color: darkMode ? "#ededed" : "#000000" }}
       >
@@ -94,12 +100,11 @@ const Sidebar = ({ darkMode }) => {
             to={item.path}
             className={({ isActive }) =>
               `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium
-              ${
-                isActive
-                  ? darkMode
-                    ? "bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-lg scale-105"
-                    : "bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-lg scale-105"
-                  : darkMode
+              ${isActive
+                ? darkMode
+                  ? "bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-lg scale-105"
+                  : "bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-lg scale-105"
+                : darkMode
                   ? "text-gray-300 hover:bg-gray-800 active:scale-95"
                   : "text-slate-700 hover:bg-slate-100 active:scale-95"
               }

@@ -1,12 +1,9 @@
 import React from "react";
 import { useAppContext } from "../Context/AppContext";
 import StatsCard from "../components/dashboard/StatsCard";
-import { Bell } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 
 const DashboardPage = ({ message, darkMode }) => {
   const { role, userName } = useAppContext();
-  const navigate = useNavigate();
 
   const stats = [
     { label: "Total Alerts Submitted", value: 47, icon: "📄" },
@@ -19,21 +16,12 @@ const DashboardPage = ({ message, darkMode }) => {
     <div className="space-y-8">
       {/* Welcome Section */}
       <div>
-        <div className="flex justify-between items-center">
-          <h1
-            className="text-3xl font-bold"
-            style={{ color: darkMode ? "#ededed" : "#1e293b" }}
-          >
-            Welcome back, {userName}! 👋
-          </h1>
-          <button
-            onClick={() => navigate("/inbox")}
-            style={{ color: darkMode ? "#b3b3b3" : "#475569" }}
-            className="hover:opacity-70 transition-opacity"
-          >
-            <Bell />
-          </button>
-        </div>
+        <h1
+          className="text-3xl font-bold"
+          style={{ color: darkMode ? "#ededed" : "#1e293b" }}
+        >
+          Welcome back, {userName}! 👋
+        </h1>
         <p
           className="mt-1"
           style={{ color: darkMode ? "#8a8a8a" : "#64748b" }}
