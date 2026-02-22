@@ -5,7 +5,7 @@ numpy
 pandas
 pydantic
 python-dotenv
-scikit-learn
+scikit-learn==1.7.2
 uvicorn[standard]
 xgboost
 imbalanced-learn
