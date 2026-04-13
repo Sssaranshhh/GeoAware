@@ -29,6 +29,7 @@ export const signin = async (credentials) => {
     if (response.data.token) {
       localStorage.setItem("token", response.data.token);
       localStorage.setItem("userId", response.data.userId);
+      localStorage.setItem("userType", response.data.userType);
     }
 
     return response.data;

@@ -2,7 +2,7 @@ import React from "react";
 import { NavLink } from "react-router-dom";
 import { useAppContext } from "../../Context/AppContext";
 
-const Sidebar = () => {
+const Sidebar = ({ darkMode }) => {
   const { role } = useAppContext();
 
   const menuItems = [
@@ -39,6 +39,12 @@ const Sidebar = () => {
       roles: ["admin"],
     },
     {
+      path: "/inbox",
+      label: "Inbox",
+      icon: "📬",
+      roles: ["user", "responder", "admin"],
+    },
+    {
       path: "/predict",
       label: "Disaster Prediction",
       icon: "🗓️",
@@ -61,14 +67,37 @@ const Sidebar = () => {
       label: "Flood Prediction",
       icon: "🌊",
       roles: ["user", "responder", "admin"],
+    },
+    {
+      path: "/mosdac-prediction",
+      label: "Satellite Flood Risk",
+      icon: "🛰️",
+      roles: ["user", "responder", "admin"],
+    },
+    {
+      path: "/simple-flood-prediction",
+      label: "Simple Flood Predict",
+      icon: "💧",
+      roles: ["user", "responder", "admin"],
     }
   ];
 
   const filteredItems = menuItems.filter((item) => item.roles.includes(role));
 
   return (
-    <aside className="w-64 bg-white border-r border-slate-200 p-6 flex flex-col gap-6 rounded-xl shadow-sm">
-      <h2 className="text-xl font-bold text-slate-800">Menu</h2>
+    <aside
+      className="w-64 border-r p-6 flex flex-col gap-6 rounded-xl shadow-sm"
+      style={{
+        backgroundColor: darkMode ? "#202020" : "#ffffff",
+        borderColor: darkMode ? "#2f2f2f" : "#e2e8f0",
+      }}
+    >
+      <h2
+        className="text-xl font-bold"
+        style={{ color: darkMode ? "#ededed" : "#000000" }}
+      >
+        Menu
+      </h2>
 
       <nav className="flex flex-col gap-2">
         {filteredItems.map((item) => (
@@ -77,9 +106,12 @@ const Sidebar = () => {
             to={item.path}
             className={({ isActive }) =>
               `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium
-              ${
-                isActive
+              ${isActive
+                ? darkMode
                   ? "bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-lg scale-105"
+                  : "bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-lg scale-105"
+                : darkMode
+                  ? "text-gray-300 hover:bg-gray-800 active:scale-95"
                   : "text-slate-700 hover:bg-slate-100 active:scale-95"
               }
               `

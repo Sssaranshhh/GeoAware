@@ -48,7 +48,7 @@ export default function MapView() {
     return () => {
       try {
         if (mapRef.current) mapRef.current.remove();
-      } catch (e) {}
+      } catch (e) { }
     };
   }, []);
 
@@ -67,13 +67,13 @@ export default function MapView() {
 
     const street = window.L.tileLayer(
       "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-      { attribution: "© OpenStreetMap contributors", maxZoom: 19 }
+      { attribution: "© OpenStreetMap contributors", maxZoom: 19 },
     );
     street.addTo(mapRef.current);
 
     const satellite = window.L.tileLayer(
       "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-      { attribution: "Tiles © Esri & others", maxZoom: 19 }
+      { attribution: "Tiles © Esri & others", maxZoom: 19 },
     );
 
     window.L.control
@@ -121,7 +121,7 @@ export default function MapView() {
             .addTo(mapRef.current)
             .bindPopup("Your Location");
         },
-        () => {}
+        () => { },
       );
     }
   }
@@ -141,10 +141,14 @@ export default function MapView() {
   function parseEarthquakeCSV(lines) {
     if (!lines || lines.length === 0) return [];
     const header = lines[0].split(",").map((h) => h.trim().toLowerCase());
-    const latIdx = header.indexOf("latitude") >= 0 ? header.indexOf("latitude") : 0;
-    const lngIdx = header.indexOf("longitude") >= 0 ? header.indexOf("longitude") : 1;
-    const magIdx = header.indexOf("magnitude") >= 0 ? header.indexOf("magnitude") : 2;
-    const locIdx = header.indexOf("location") >= 0 ? header.indexOf("location") : -1;
+    const latIdx =
+      header.indexOf("latitude") >= 0 ? header.indexOf("latitude") : 0;
+    const lngIdx =
+      header.indexOf("longitude") >= 0 ? header.indexOf("longitude") : 1;
+    const magIdx =
+      header.indexOf("magnitude") >= 0 ? header.indexOf("magnitude") : 2;
+    const locIdx =
+      header.indexOf("location") >= 0 ? header.indexOf("location") : -1;
     const out = [];
     for (let i = 1; i < lines.length; i++) {
       const row = splitCSVLine(lines[i]);
@@ -164,7 +168,7 @@ export default function MapView() {
 
     let latIdx = header.findIndex((h) => h.includes("latitude") || h === "lat");
     let lngIdx = header.findIndex(
-      (h) => h.includes("longitude") || h === "lon" || h === "lng"
+      (h) => h.includes("longitude") || h === "lon" || h === "lng",
     );
 
     const hasRealLng = lngIdx !== -1;
@@ -176,7 +180,8 @@ export default function MapView() {
       const coords = [];
       for (let i = 1; i < lines.length; i++) {
         const row = splitCSVLine(lines[i]);
-        if (cycloneLabelIdx >= 0 && row[cycloneLabelIdx]?.trim() !== "1") continue;
+        if (cycloneLabelIdx >= 0 && row[cycloneLabelIdx]?.trim() !== "1")
+          continue;
         const lat = parseFloatSafe(row[latIdx]);
         const lng = parseFloatSafe(row[lngIdx]);
         if (isFinite(lat) && isFinite(lng)) coords.push([lat, lng]);
@@ -190,33 +195,64 @@ export default function MapView() {
     // Sources: IMD records for Cyclone Fani (2019), Hudhud (2014), Phailin (2013)
     return [
       // Cyclone Fani (2019) — formed near Sumatra, tracked NW, landfall Puri, Odisha
-      [6.0, 85.5], [7.2, 85.0], [8.5, 84.3], [9.8, 83.5],
-      [11.2, 82.8], [12.6, 82.0], [14.0, 81.2], [15.5, 80.5],
-      [17.0, 80.0], [18.4, 79.6], [19.8, 85.6], [20.5, 84.8],
+      [6.0, 85.5],
+      [7.2, 85.0],
+      [8.5, 84.3],
+      [9.8, 83.5],
+      [11.2, 82.8],
+      [12.6, 82.0],
+      [14.0, 81.2],
+      [15.5, 80.5],
+      [17.0, 80.0],
+      [18.4, 79.6],
+      [19.8, 85.6],
+      [20.5, 84.8],
 
       // Cyclone Hudhud (2014) — formed Bay of Bengal, landfall Visakhapatnam
-      [9.5, 92.0], [10.8, 91.2], [12.0, 90.4], [13.3, 89.5],
-      [14.6, 88.6], [15.9, 87.7], [17.1, 86.8], [17.7, 85.8],
+      [9.5, 92.0],
+      [10.8, 91.2],
+      [12.0, 90.4],
+      [13.3, 89.5],
+      [14.6, 88.6],
+      [15.9, 87.7],
+      [17.1, 86.8],
+      [17.7, 85.8],
 
       // Cyclone Phailin (2013) — landfall Gopalpur, Odisha
-      [8.0, 93.5], [9.3, 92.6], [10.7, 91.7], [12.1, 90.7],
-      [13.5, 89.6], [15.0, 88.4], [16.5, 87.2], [17.8, 86.0],
-      [18.8, 85.0], [19.5, 84.5],
+      [8.0, 93.5],
+      [9.3, 92.6],
+      [10.7, 91.7],
+      [12.1, 90.7],
+      [13.5, 89.6],
+      [15.0, 88.4],
+      [16.5, 87.2],
+      [17.8, 86.0],
+      [18.8, 85.0],
+      [19.5, 84.5],
 
       // Cyclone Gaja (2018) — landfall Tamil Nadu coast
-      [8.5, 88.0], [9.5, 87.5], [10.6, 87.0], [11.5, 86.4],
-      [12.3, 85.8], [13.0, 85.2], [13.8, 84.5], [14.5, 83.8],
-      [15.0, 83.0], [15.4, 82.2],
+      [8.5, 88.0],
+      [9.5, 87.5],
+      [10.6, 87.0],
+      [11.5, 86.4],
+      [12.3, 85.8],
+      [13.0, 85.2],
+      [13.8, 84.5],
+      [14.5, 83.8],
+      [15.0, 83.0],
+      [15.4, 82.2],
     ];
   }
 
   function parseLatLngCSV(lines) {
     if (!lines || lines.length === 0) return [];
     const header = lines[0].split(",").map((h) => h.trim().toLowerCase());
-    const latIdx = header.indexOf("latitude") >= 0 ? header.indexOf("latitude") : 0;
-    const lngIdx = header.indexOf("longitude") >= 0 ? header.indexOf("longitude") : 1;
+    const latIdx =
+      header.indexOf("latitude") >= 0 ? header.indexOf("latitude") : 0;
+    const lngIdx =
+      header.indexOf("longitude") >= 0 ? header.indexOf("longitude") : 1;
     const floodOccurredIdx = header.findIndex(
-      (h) => h.includes("flood") && h.includes("occurred")
+      (h) => h.includes("flood") && h.includes("occurred"),
     );
     const out = [];
     for (let i = 1; i < lines.length; i++) {
@@ -238,8 +274,10 @@ export default function MapView() {
     if (!lines || lines.length === 0) return [];
     const header = lines[0].split(",").map((h) => h.trim().toLowerCase());
 
-    const latIdx = header.indexOf("latitude") >= 0 ? header.indexOf("latitude") : -1;
-    const lngIdx = header.indexOf("longitude") >= 0 ? header.indexOf("longitude") : -1;
+    const latIdx =
+      header.indexOf("latitude") >= 0 ? header.indexOf("latitude") : -1;
+    const lngIdx =
+      header.indexOf("longitude") >= 0 ? header.indexOf("longitude") : -1;
     const xIdx = header.indexOf("x") >= 0 ? header.indexOf("x") : -1;
     const yIdx = header.indexOf("y") >= 0 ? header.indexOf("y") : -1;
 
@@ -271,41 +309,95 @@ export default function MapView() {
         //         Telangana, Uttarakhand, HP, Rajasthan fire zones
         const fireLandmarks = {
           // x=1 (westernmost) — Rajasthan / Gujarat interior
-          "1,1": [25.2, 73.0], "1,2": [24.5, 72.8], "1,3": [23.8, 73.2],
-          "1,4": [23.0, 73.5], "1,5": [22.3, 73.1], "1,6": [21.5, 73.4],
-          "1,7": [20.8, 73.0], "1,8": [20.0, 73.3], "1,9": [19.2, 73.1],
+          "1,1": [25.2, 73.0],
+          "1,2": [24.5, 72.8],
+          "1,3": [23.8, 73.2],
+          "1,4": [23.0, 73.5],
+          "1,5": [22.3, 73.1],
+          "1,6": [21.5, 73.4],
+          "1,7": [20.8, 73.0],
+          "1,8": [20.0, 73.3],
+          "1,9": [19.2, 73.1],
           // x=2 — MP western / Maharashtra
-          "2,1": [24.8, 75.8], "2,2": [24.2, 75.5], "2,3": [23.5, 76.0],
-          "2,4": [22.8, 76.3], "2,5": [22.0, 76.8], "2,6": [21.2, 76.5],
-          "2,7": [20.5, 76.2], "2,8": [19.8, 75.9], "2,9": [19.0, 75.6],
+          "2,1": [24.8, 75.8],
+          "2,2": [24.2, 75.5],
+          "2,3": [23.5, 76.0],
+          "2,4": [22.8, 76.3],
+          "2,5": [22.0, 76.8],
+          "2,6": [21.2, 76.5],
+          "2,7": [20.5, 76.2],
+          "2,8": [19.8, 75.9],
+          "2,9": [19.0, 75.6],
           // x=3 — MP central / Chhattisgarh north
-          "3,1": [24.5, 78.4], "3,2": [23.9, 78.1], "3,3": [23.2, 78.7],
-          "3,4": [22.5, 79.0], "3,5": [21.8, 79.3], "3,6": [21.0, 79.0],
-          "3,7": [20.3, 78.8], "3,8": [19.6, 78.5], "3,9": [18.9, 78.2],
+          "3,1": [24.5, 78.4],
+          "3,2": [23.9, 78.1],
+          "3,3": [23.2, 78.7],
+          "3,4": [22.5, 79.0],
+          "3,5": [21.8, 79.3],
+          "3,6": [21.0, 79.0],
+          "3,7": [20.3, 78.8],
+          "3,8": [19.6, 78.5],
+          "3,9": [18.9, 78.2],
           // x=4 — Chhattisgarh core (most fire-prone)
-          "4,1": [23.3, 81.6], "4,2": [22.7, 81.3], "4,3": [22.0, 81.8],
-          "4,4": [21.3, 82.1], "4,5": [20.6, 82.4], "4,6": [19.9, 82.0],
-          "4,7": [19.2, 81.7], "4,8": [18.5, 81.4], "4,9": [17.8, 81.1],
+          "4,1": [23.3, 81.6],
+          "4,2": [22.7, 81.3],
+          "4,3": [22.0, 81.8],
+          "4,4": [21.3, 82.1],
+          "4,5": [20.6, 82.4],
+          "4,6": [19.9, 82.0],
+          "4,7": [19.2, 81.7],
+          "4,8": [18.5, 81.4],
+          "4,9": [17.8, 81.1],
           // x=5 — Odisha west / Jharkhand south
-          "5,1": [23.0, 83.5], "5,2": [22.4, 83.2], "5,3": [21.7, 83.7],
-          "5,4": [21.0, 84.0], "5,5": [20.3, 84.3], "5,6": [19.6, 83.9],
-          "5,7": [18.9, 83.6], "5,8": [18.2, 83.3], "5,9": [17.5, 83.0],
+          "5,1": [23.0, 83.5],
+          "5,2": [22.4, 83.2],
+          "5,3": [21.7, 83.7],
+          "5,4": [21.0, 84.0],
+          "5,5": [20.3, 84.3],
+          "5,6": [19.6, 83.9],
+          "5,7": [18.9, 83.6],
+          "5,8": [18.2, 83.3],
+          "5,9": [17.5, 83.0],
           // x=6 — Odisha central / Jharkhand
-          "6,1": [23.6, 85.2], "6,2": [23.0, 84.9], "6,3": [22.3, 85.4],
-          "6,4": [21.6, 85.7], "6,5": [20.9, 85.3], "6,6": [20.2, 85.0],
-          "6,7": [19.5, 84.7], "6,8": [18.8, 84.4], "6,9": [18.1, 84.1],
+          "6,1": [23.6, 85.2],
+          "6,2": [23.0, 84.9],
+          "6,3": [22.3, 85.4],
+          "6,4": [21.6, 85.7],
+          "6,5": [20.9, 85.3],
+          "6,6": [20.2, 85.0],
+          "6,7": [19.5, 84.7],
+          "6,8": [18.8, 84.4],
+          "6,9": [18.1, 84.1],
           // x=7 — Jharkhand / West Bengal interior
-          "7,1": [24.0, 86.5], "7,2": [23.4, 86.2], "7,3": [22.7, 86.7],
-          "7,4": [22.0, 87.0], "7,5": [21.3, 86.6], "7,6": [20.6, 86.3],
-          "7,7": [19.9, 86.0], "7,8": [19.2, 85.7], "7,9": [18.5, 85.4],
+          "7,1": [24.0, 86.5],
+          "7,2": [23.4, 86.2],
+          "7,3": [22.7, 86.7],
+          "7,4": [22.0, 87.0],
+          "7,5": [21.3, 86.6],
+          "7,6": [20.6, 86.3],
+          "7,7": [19.9, 86.0],
+          "7,8": [19.2, 85.7],
+          "7,9": [18.5, 85.4],
           // x=8 — Uttarakhand / HP (Himalayan foothills fires)
-          "8,1": [30.5, 78.9], "8,2": [30.0, 79.3], "8,3": [29.4, 79.8],
-          "8,4": [28.8, 80.2], "8,5": [28.2, 80.7], "8,6": [27.6, 81.1],
-          "8,7": [27.0, 81.5], "8,8": [26.4, 82.0], "8,9": [25.8, 82.4],
+          "8,1": [30.5, 78.9],
+          "8,2": [30.0, 79.3],
+          "8,3": [29.4, 79.8],
+          "8,4": [28.8, 80.2],
+          "8,5": [28.2, 80.7],
+          "8,6": [27.6, 81.1],
+          "8,7": [27.0, 81.5],
+          "8,8": [26.4, 82.0],
+          "8,9": [25.8, 82.4],
           // x=9 — Himachal Pradesh / Punjab hills
-          "9,1": [32.0, 76.5], "9,2": [31.5, 76.9], "9,3": [31.0, 77.3],
-          "9,4": [30.4, 77.8], "9,5": [29.9, 78.2], "9,6": [29.3, 78.6],
-          "9,7": [28.7, 79.0], "9,8": [28.1, 79.5], "9,9": [27.5, 79.9],
+          "9,1": [32.0, 76.5],
+          "9,2": [31.5, 76.9],
+          "9,3": [31.0, 77.3],
+          "9,4": [30.4, 77.8],
+          "9,5": [29.9, 78.2],
+          "9,6": [29.3, 78.6],
+          "9,7": [28.7, 79.0],
+          "9,8": [28.1, 79.5],
+          "9,9": [27.5, 79.9],
         };
 
         const key = `${xVal},${yVal}`;
@@ -352,20 +444,71 @@ export default function MapView() {
   // Cyclone track definitions
   const CYCLONE_TRACKS = [
     {
-      name: "Cyclone Fani (2019)", color: "#ef4444",
-      coords: [[6.0,87.5],[7.5,87.0],[9.0,86.4],[10.5,86.0],[12.0,85.5],[13.5,85.2],[15.0,85.0],[16.5,85.0],[18.0,85.2],[19.0,85.5],[19.8,85.8],[20.3,85.8]],
+      name: "Cyclone Fani (2019)",
+      color: "#ef4444",
+      coords: [
+        [6.0, 87.5],
+        [7.5, 87.0],
+        [9.0, 86.4],
+        [10.5, 86.0],
+        [12.0, 85.5],
+        [13.5, 85.2],
+        [15.0, 85.0],
+        [16.5, 85.0],
+        [18.0, 85.2],
+        [19.0, 85.5],
+        [19.8, 85.8],
+        [20.3, 85.8],
+      ],
     },
     {
-      name: "Cyclone Hudhud (2014)", color: "#22d3ee",
-      coords: [[8.0,93.5],[9.2,92.6],[10.5,91.7],[11.8,90.7],[13.0,89.6],[14.2,88.5],[15.4,87.4],[16.5,86.2],[17.2,85.0],[17.6,83.8],[17.7,83.3]],
+      name: "Cyclone Hudhud (2014)",
+      color: "#22d3ee",
+      coords: [
+        [8.0, 93.5],
+        [9.2, 92.6],
+        [10.5, 91.7],
+        [11.8, 90.7],
+        [13.0, 89.6],
+        [14.2, 88.5],
+        [15.4, 87.4],
+        [16.5, 86.2],
+        [17.2, 85.0],
+        [17.6, 83.8],
+        [17.7, 83.3],
+      ],
     },
     {
-      name: "Cyclone Phailin (2013)", color: "#c084fc",
-      coords: [[10.0,94.0],[11.2,93.0],[12.4,91.9],[13.6,90.7],[14.8,89.4],[16.0,88.1],[17.2,86.8],[18.2,85.8],[19.0,85.2],[19.3,84.9]],
+      name: "Cyclone Phailin (2013)",
+      color: "#c084fc",
+      coords: [
+        [10.0, 94.0],
+        [11.2, 93.0],
+        [12.4, 91.9],
+        [13.6, 90.7],
+        [14.8, 89.4],
+        [16.0, 88.1],
+        [17.2, 86.8],
+        [18.2, 85.8],
+        [19.0, 85.2],
+        [19.3, 84.9],
+      ],
     },
     {
-      name: "Cyclone Gaja (2018)", color: "#4ade80",
-      coords: [[10.2,90.5],[10.4,89.4],[10.5,88.2],[10.6,87.0],[10.7,85.8],[10.8,84.5],[10.8,83.2],[10.8,82.0],[10.8,80.8],[10.8,79.8]],
+      name: "Cyclone Gaja (2018)",
+      color: "#4ade80",
+      coords: [
+        [10.2, 90.5],
+        [10.4, 89.4],
+        [10.5, 88.2],
+        [10.6, 87.0],
+        [10.7, 85.8],
+        [10.8, 84.5],
+        [10.8, 83.2],
+        [10.8, 82.0],
+        [10.8, 80.8],
+        [10.8, 79.8],
+      ],
     },
   ];
 
@@ -399,14 +542,24 @@ export default function MapView() {
       // Origin dot
       cycloneRef.current.addLayer(
         window.L.circleMarker(coords[0], {
-          radius: 6, color, fillColor: "#0f1423", fillOpacity: 1, weight: 2.5,
-        }).bindPopup(`🌀 <b>${name}</b><br/>📍 Origin`)
+          radius: 6,
+          color,
+          fillColor: "#0f1423",
+          fillOpacity: 1,
+          weight: 2.5,
+        }).bindPopup(`🌀 <b>${name}</b><br/>📍 Origin`),
       );
 
       // Waypoint dots
-      coords.slice(1, -1).forEach(coord => {
+      coords.slice(1, -1).forEach((coord) => {
         cycloneRef.current.addLayer(
-          window.L.circleMarker(coord, { radius: 3, color, fillColor: color, fillOpacity: 1, weight: 0 })
+          window.L.circleMarker(coord, {
+            radius: 3,
+            color,
+            fillColor: color,
+            fillOpacity: 1,
+            weight: 0,
+          }),
         );
       });
 
@@ -414,8 +567,12 @@ export default function MapView() {
       const last = coords[coords.length - 1];
       cycloneRef.current.addLayer(
         window.L.circleMarker(last, {
-          radius: 8, color: "#fff", fillColor: color, fillOpacity: 1, weight: 2,
-        }).bindPopup(`🌀 <b>${name}</b><br/>⚡ <b>Landfall</b>`)
+          radius: 8,
+          color: "#fff",
+          fillColor: color,
+          fillOpacity: 1,
+          weight: 2,
+        }).bindPopup(`🌀 <b>${name}</b><br/>⚡ <b>Landfall</b>`),
       );
     });
 
@@ -429,10 +586,14 @@ export default function MapView() {
             poly._path.setAttribute("stroke", color);
             poly._path.style.stroke = color;
           }
-        } catch (e) {}
+        } catch (e) { }
       });
     };
-    requestAnimationFrame(() => { patch(); setTimeout(patch, 100); setTimeout(patch, 300); });
+    requestAnimationFrame(() => {
+      patch();
+      setTimeout(patch, 100);
+      setTimeout(patch, 300);
+    });
   }
 
   // ✅ FIX: Accept isVisible as parameter to avoid stale closure
@@ -458,7 +619,7 @@ export default function MapView() {
         fillOpacity: 0.15,
         dashArray: "5 5",
       }).bindPopup(
-        `Flood Zone ${idx + 1}<br/>Lat: ${lat.toFixed(3)}, Lng: ${lng.toFixed(3)}`
+        `Flood Zone ${idx + 1}<br/>Lat: ${lat.toFixed(3)}, Lng: ${lng.toFixed(3)}`,
       );
       floodRef.current.addLayer(rect);
     });
@@ -495,7 +656,7 @@ export default function MapView() {
         fillOpacity: 0.15,
         dashArray: "6 4",
       }).bindPopup(
-        `Forest Fire Zone ${idx + 1}<br/>Lat: ${lat.toFixed(3)}, Lng: ${lng.toFixed(3)}`
+        `Forest Fire Zone ${idx + 1}<br/>Lat: ${lat.toFixed(3)}, Lng: ${lng.toFixed(3)}`,
       );
       fireRef.current.addLayer(poly);
     });
@@ -516,13 +677,17 @@ export default function MapView() {
         mapRef.current.removeLayer(heatRef.current);
         heatRef.current = null;
       }
-    } catch (e) {}
+    } catch (e) { }
 
     const data = earthquakesRef.current || [];
     if (data.length === 0) return;
 
     if (isHeatmap && window.L && window.L.heatLayer) {
-      const points = data.map((d) => [d.lat, d.lng, Math.max(0.1, d.mag * 0.25)]);
+      const points = data.map((d) => [
+        d.lat,
+        d.lng,
+        Math.max(0.1, d.mag * 0.25),
+      ]);
       heatRef.current = window.L.heatLayer(points, {
         radius: 25,
         blur: 20,
@@ -546,10 +711,10 @@ export default function MapView() {
           d.mag >= 6
             ? "#ef4444"
             : d.mag >= 5
-            ? "#fb923c"
-            : d.mag >= 4
-            ? "#f59e0b"
-            : "#10b981";
+              ? "#fb923c"
+              : d.mag >= 4
+                ? "#f59e0b"
+                : "#10b981";
         const radius = Math.min(20, 3 + d.mag * 2.5);
         const cm = window.L.circleMarker([d.lat, d.lng], {
           radius,
@@ -557,7 +722,7 @@ export default function MapView() {
           weight: 1.4,
           fillOpacity: 0.55,
         }).bindPopup(
-          `<b>${d.loc || "Unknown"}</b><br/>Magnitude: ${d.mag}<br/>Coords: ${d.lat.toFixed(3)}, ${d.lng.toFixed(3)}`
+          `<b>${d.loc || "Unknown"}</b><br/>Magnitude: ${d.mag}<br/>Coords: ${d.lat.toFixed(3)}, ${d.lng.toFixed(3)}`,
         );
         quakeLayerRef.current.addLayer(cm);
       });
@@ -581,7 +746,8 @@ export default function MapView() {
   }, [showFire, mapLoaded, dataLoaded]);
 
   useEffect(() => {
-    if (mapLoaded && dataLoaded) drawEarthquakes(showHeatmap, showQuakes, magThreshold);
+    if (mapLoaded && dataLoaded)
+      drawEarthquakes(showHeatmap, showQuakes, magThreshold);
   }, [showHeatmap, showQuakes, magThreshold, mapLoaded, dataLoaded]);
 
   const styles = {
@@ -615,7 +781,8 @@ export default function MapView() {
       alignItems: "center",
       justifyContent: "space-between",
       padding: "14px 20px",
-      background: "linear-gradient(180deg, rgba(11,15,26,0.92) 0%, rgba(11,15,26,0) 100%)",
+      background:
+        "linear-gradient(180deg, rgba(11,15,26,0.92) 0%, rgba(11,15,26,0) 100%)",
       pointerEvents: "none",
     },
     topBarTitle: {
@@ -781,26 +948,63 @@ export default function MapView() {
         boxShadow: checked ? `0 0 10px ${color}55` : "none",
       }}
     >
-      <div style={{
-        position: "absolute",
-        top: 2,
-        left: checked ? 18 : 2,
-        width: 14,
-        height: 14,
-        borderRadius: "50%",
-        background: "#fff",
-        transition: "left 0.2s",
-        boxShadow: "0 1px 4px rgba(0,0,0,0.4)",
-      }} />
+      <div
+        style={{
+          position: "absolute",
+          top: 2,
+          left: checked ? 18 : 2,
+          width: 14,
+          height: 14,
+          borderRadius: "50%",
+          background: "#fff",
+          transition: "left 0.2s",
+          boxShadow: "0 1px 4px rgba(0,0,0,0.4)",
+        }}
+      />
     </div>
   );
 
   const layers = [
-    { key: "quakes",  label: "Earthquake Circles", icon: "🔴", color: "#ef4444",  state: showQuakes,  set: () => setShowQuakes(s => !s) },
-    { key: "heat",    label: "Heatmap",             icon: "🌡️", color: "#f97316",  state: showHeatmap, set: () => setShowHeatmap(s => !s) },
-    { key: "cyclone", label: "Cyclone Path",        icon: "🌀", color: "#f59e0b",  state: showCyclone, set: () => setShowCyclone(s => !s) },
-    { key: "flood",   label: "Flood Zones",         icon: "🌊", color: "#3b82f6",  state: showFlood,   set: () => setShowFlood(s => !s) },
-    { key: "fire",    label: "Forest Fire Rings",   icon: "🔥", color: "#fb923c",  state: showFire,    set: () => setShowFire(s => !s) },
+    {
+      key: "quakes",
+      label: "Earthquake Circles",
+      icon: "🔴",
+      color: "#ef4444",
+      state: showQuakes,
+      set: () => setShowQuakes((s) => !s),
+    },
+    {
+      key: "heat",
+      label: "Heatmap",
+      icon: "🌡️",
+      color: "#f97316",
+      state: showHeatmap,
+      set: () => setShowHeatmap((s) => !s),
+    },
+    {
+      key: "cyclone",
+      label: "Cyclone Path",
+      icon: "🌀",
+      color: "#f59e0b",
+      state: showCyclone,
+      set: () => setShowCyclone((s) => !s),
+    },
+    {
+      key: "flood",
+      label: "Flood Zones",
+      icon: "🌊",
+      color: "#3b82f6",
+      state: showFlood,
+      set: () => setShowFlood((s) => !s),
+    },
+    {
+      key: "fire",
+      label: "Forest Fire Rings",
+      icon: "🔥",
+      color: "#fb923c",
+      state: showFire,
+      set: () => setShowFire((s) => !s),
+    },
   ];
 
   const legendItems = [
@@ -836,9 +1040,54 @@ export default function MapView() {
         .map-container .leaflet-control-zoom a:hover {
           background: rgba(239,68,68,0.3) !important;
         }
+        /* Push right-side controls below the top bar */
+        .map-container .leaflet-top.leaflet-right {
+          top: 60px !important;
+        }
+        /* ── Layer switcher (Street / Satellite) ── */
+        .map-container .leaflet-control-layers {
+          background: rgba(11,15,26,0.92) !important;
+          border: 1px solid rgba(255,255,255,0.15) !important;
+          border-radius: 10px !important;
+          backdrop-filter: blur(14px) !important;
+          box-shadow: 0 4px 24px rgba(0,0,0,0.5) !important;
+          padding: 6px 2px !important;
+          min-width: 130px !important;
+        }
         .map-container .leaflet-control-layers-toggle {
-          background-color: rgba(15,20,35,0.9) !important;
-          border: 1px solid rgba(255,255,255,0.1) !important;
+          background-color: rgba(11,15,26,0.92) !important;
+          border: 1px solid rgba(255,255,255,0.15) !important;
+          border-radius: 10px !important;
+          backdrop-filter: blur(14px) !important;
+          box-shadow: 0 4px 24px rgba(0,0,0,0.5) !important;
+          width: 36px !important;
+          height: 36px !important;
+        }
+        .map-container .leaflet-control-layers-base label,
+        .map-container .leaflet-control-layers-overlays label {
+          color: rgba(255,255,255,0.85) !important;
+          font-size: 13px !important;
+          font-weight: 500 !important;
+          padding: 4px 12px !important;
+          border-radius: 6px !important;
+          margin: 2px 4px !important;
+          display: flex !important;
+          align-items: center !important;
+          gap: 6px !important;
+          cursor: pointer !important;
+          transition: background 0.15s !important;
+        }
+        .map-container .leaflet-control-layers-base label:hover,
+        .map-container .leaflet-control-layers-overlays label:hover {
+          background: rgba(99,102,241,0.2) !important;
+        }
+        .map-container .leaflet-control-layers-base label input:checked + span,
+        .map-container .leaflet-control-layers-base label:has(input:checked) {
+          color: #818cf8 !important;
+        }
+        .map-container .leaflet-control-layers-separator {
+          border-color: rgba(255,255,255,0.1) !important;
+          margin: 4px 0 !important;
         }
         input[type=range] {
           -webkit-appearance: none;
@@ -871,19 +1120,36 @@ export default function MapView() {
       {/* ── Full-bleed map ── */}
       <div style={styles.mapWrap}>
         {!mapLoaded && (
-          <div style={{
-            position: "absolute", inset: 0, zIndex: 5,
-            display: "flex", flexDirection: "column",
-            alignItems: "center", justifyContent: "center",
-            background: "#0b0f1a", gap: 12,
-          }}>
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              zIndex: 5,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "#0b0f1a",
+              gap: 12,
+            }}
+          >
             <div style={{ fontSize: 40 }}>🗺️</div>
-            <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 14, letterSpacing: 1 }}>
+            <div
+              style={{
+                color: "rgba(255,255,255,0.5)",
+                fontSize: 14,
+                letterSpacing: 1,
+              }}
+            >
               INITIALISING MAP…
             </div>
           </div>
         )}
-        <div ref={mapContainerRef} className="map-container" style={styles.mapEl} />
+        <div
+          ref={mapContainerRef}
+          className="map-container"
+          style={styles.mapEl}
+        />
       </div>
 
       {/* ── Top bar ── */}
@@ -892,40 +1158,53 @@ export default function MapView() {
           <div style={styles.topBarIcon}>🌍</div>
           <div>
             <div style={styles.topBarText}>Disaster Risk Map</div>
-            <div style={styles.topBarSub}>India — Real-time multi-hazard monitor</div>
+            <div style={styles.topBarSub}>
+              India — Real-time multi-hazard monitor
+            </div>
           </div>
         </div>
-        <div style={{
-          ...styles.statusBadge,
-          ...(dataLoaded ? {} : styles.loadingBadge),
-          pointerEvents: "auto",
-        }}>
-          <div style={{
-            ...styles.statusDot,
-            background: dataLoaded ? "#10b981" : "#fbbf24",
-            boxShadow: `0 0 6px ${dataLoaded ? "#10b981" : "#fbbf24"}`,
-          }} />
+        <div
+          style={{
+            ...styles.statusBadge,
+            ...(dataLoaded ? {} : styles.loadingBadge),
+            pointerEvents: "auto",
+          }}
+        >
+          <div
+            style={{
+              ...styles.statusDot,
+              background: dataLoaded ? "#10b981" : "#fbbf24",
+              boxShadow: `0 0 6px ${dataLoaded ? "#10b981" : "#fbbf24"}`,
+            }}
+          />
           {dataLoaded ? "Data Loaded" : "Loading…"}
         </div>
       </div>
 
       {/* ── Left floating panel ── */}
       <div style={styles.panel} className="panel-scroll">
-
         {/* Layer toggles */}
         <div style={styles.card}>
           <div style={styles.cardTitle}>Map Layers</div>
           {layers.map(({ key, label, icon, color, state, set }) => (
-            <div key={key} style={{ ...styles.toggleRow, cursor: "pointer" }} onClick={set}>
+            <div
+              key={key}
+              style={{ ...styles.toggleRow, cursor: "pointer" }}
+              onClick={set}
+            >
               <div style={styles.toggleLeft}>
-                <div style={{
-                  ...styles.toggleIcon,
-                  background: state ? `${color}22` : "rgba(255,255,255,0.05)",
-                  border: `1px solid ${state ? color + "55" : "rgba(255,255,255,0.06)"}`,
-                }}>
+                <div
+                  style={{
+                    ...styles.toggleIcon,
+                    background: state ? `${color}22` : "rgba(255,255,255,0.05)",
+                    border: `1px solid ${state ? color + "55" : "rgba(255,255,255,0.06)"}`,
+                  }}
+                >
                   {icon}
                 </div>
-                <span style={{ color: state ? "#fff" : "rgba(255,255,255,0.5)" }}>
+                <span
+                  style={{ color: state ? "#fff" : "rgba(255,255,255,0.5)" }}
+                >
                   {label}
                 </span>
               </div>
@@ -944,15 +1223,24 @@ export default function MapView() {
             </div>
             <input
               type="range"
-              min="1" max="9" step="0.1"
+              min="1"
+              max="9"
+              step="0.1"
               value={magThreshold}
               onChange={(e) => setMagThreshold(parseFloat(e.target.value))}
             />
-            <div style={{
-              display: "flex", justifyContent: "space-between",
-              fontSize: 10, color: "rgba(255,255,255,0.25)", marginTop: 4,
-            }}>
-              <span>1.0</span><span>5.0</span><span>9.0</span>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                fontSize: 10,
+                color: "rgba(255,255,255,0.25)",
+                marginTop: 4,
+              }}
+            >
+              <span>1.0</span>
+              <span>5.0</span>
+              <span>9.0</span>
             </div>
           </div>
         )}
@@ -962,15 +1250,27 @@ export default function MapView() {
           <div style={styles.cardTitle}>Legend</div>
           {legendItems.map(({ color, label, line }) => (
             <div key={label} style={styles.legendRow}>
-              {line
-                ? <div style={{ ...styles.legendLine, background: color, opacity: 0.9 }} />
-                : <div style={{ ...styles.legendDot, background: color, boxShadow: `0 0 5px ${color}88` }} />
-              }
+              {line ? (
+                <div
+                  style={{
+                    ...styles.legendLine,
+                    background: color,
+                    opacity: 0.9,
+                  }}
+                />
+              ) : (
+                <div
+                  style={{
+                    ...styles.legendDot,
+                    background: color,
+                    boxShadow: `0 0 5px ${color}88`,
+                  }}
+                />
+              )}
               {label}
             </div>
           ))}
         </div>
-
       </div>
     </div>
   );

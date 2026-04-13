@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-const BASE_URL = "http://localhost:5000";
+const BASE_URL = import.meta.env.VITE_ML_URL;
 
 const emptyCyclone = {
   Sea_Surface_Temperature: "",
@@ -16,17 +16,31 @@ const emptyCyclone = {
 const emptyEarthquake = { Latitude: "", Longitude: "", Depth: "" };
 
 const emptyFlood = {
-  "Rainfall (mm)": "",
-  "Temperature (°C)": "",
-  "Humidity (%)": "",
-  "River Discharge (m³/s)": "",
-  "Water Level (m)": "",
-  "Elevation (m)": "",
-  "Land Cover": "",
-  "Soil Type": "",
-  "Population Density": "",
+  Rainfall: "",
+  Temperature: "",
+  Humidity: "",
+  River_Discharge: "",
+  Water_Level: "",
+  Elevation: "",
+  Land_Cover: "",
+  Soil_Type: "",
+  Population_Density: "",
   Infrastructure: "",
-  "Historical Floods": "",
+  Historical_Floods: "",
+};
+
+const floodLabels = {
+  Rainfall: "Rainfall (mm)",
+  Temperature: "Temperature (°C)",
+  Humidity: "Humidity (%)",
+  River_Discharge: "River Discharge (m³/s)",
+  Water_Level: "Water Level (m)",
+  Elevation: "Elevation (m)",
+  Land_Cover: "Land Cover",
+  Soil_Type: "Soil Type",
+  Population_Density: "Population Density",
+  Infrastructure: "Infrastructure",
+  Historical_Floods: "Historical Floods",
 };
 
 const emptyForestFire = {
@@ -42,7 +56,7 @@ const emptyForestFire = {
   rain: "",
 };
 
-export default function MLplugin() {
+export default function MLplugin({ darkMode = false }) {
   const [tab, setTab] = useState("cyclone");
 
   const [cyclone, setCyclone] = useState(emptyCyclone);
@@ -50,7 +64,7 @@ export default function MLplugin() {
   const [flood, setFlood] = useState(emptyFlood);
   const [forestfire, setForestfire] = useState(emptyForestFire);
 
-  const [results, setResults] = useState({}); 
+  const [results, setResults] = useState({});
   const [loading, setLoading] = useState({});
 
   const handleChange = (setter) => (e) => {
@@ -97,11 +111,16 @@ export default function MLplugin() {
   const tabButton = (id, label) => (
     <button
       onClick={() => setTab(id)}
-      className={`px-4 py-2 rounded-md font-medium focus:outline-none transition-colors ${
-        tab === id
-          ? "bg-indigo-600 text-white shadow"
-          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-      }`}
+      style={{
+        padding: "8px 16px",
+        borderRadius: "6px",
+        fontWeight: "500",
+        border: "none",
+        cursor: "pointer",
+        transition: "all 0.2s ease",
+        backgroundColor: tab === id ? "#3b82f6" : (darkMode ? "#2a2a2a" : "#f3f4f6"),
+        color: tab === id ? "white" : (darkMode ? "#b3b3b3" : "#374151"),
+      }}
     >
       {label}
     </button>
@@ -112,33 +131,61 @@ export default function MLplugin() {
     if (loading[key])
       return (
         <div className="mt-3 p-3 rounded-md bg-yellow-50 border border-yellow-200">
-          Processing...
+          ⏳ Processing...
         </div>
       );
     if (!r) return null;
-    if (r.ok)
+    if (r.ok) {
+      const data = r.data;
+      let riskColor = "bg-green-50";
+      let riskIcon = "✅";
+
+      if (data.risk === "High") {
+        riskColor = "bg-red-50";
+        riskIcon = "🚨";
+      } else if (data.risk === "Medium") {
+        riskColor = "bg-yellow-50";
+        riskIcon = "⚠️";
+      }
+
       return (
-        <div className="mt-3 p-3 rounded-md bg-blue-50 border border-blue-200">
-          <div className="font-medium mb-2">Response:</div>
-          <pre className="text-sm overflow-auto max-h-60">
-            {JSON.stringify(r.data, null, 2)}
-          </pre>
+        <div className={`mt-3 p-4 rounded-md border-2 ${riskColor}`}>
+          <div className="text-2xl font-bold mb-2">
+            {riskIcon} Risk Level: <span className="text-indigo-700">{data.risk}</span>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-white p-3 rounded border border-gray-200">
+              <div className="text-sm text-gray-600">Confidence</div>
+              <div className="text-lg font-semibold">{(data.confidence * 100).toFixed(1)}%</div>
+            </div>
+            {data.details && (
+              <>
+                {Object.entries(data.details).map(([k, v]) => (
+                  <div key={k} className="bg-white p-3 rounded border border-gray-200">
+                    <div className="text-sm text-gray-600 capitalize">{k.replace(/_/g, " ")}</div>
+                    <div className="text-lg font-semibold">{typeof v === "number" ? v.toFixed(2) : v}</div>
+                  </div>
+                ))}
+              </>
+            )}
+          </div>
         </div>
       );
+    }
     return (
       <div className="mt-3 p-3 rounded-md bg-red-50 border border-red-200">
-        Error: {r.error}
+        ❌ Error: {r.error}
       </div>
     );
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-2xl md:text-3xl font-semibold text-center mb-6">
+    <div style={{ maxWidth: "56rem", margin: "0 auto", padding: "24px", backgroundColor: darkMode ? "#191919" : "#ffffff", color: darkMode ? "#ededed" : "#000000", borderRadius: "12px", transition: "all 0.2s ease" }}>
+      <h1 style={{ fontSize: "2rem", fontWeight: "600", textAlign: "center", marginBottom: "24px", color: darkMode ? "#ededed" : "#000000" }}>
         🌍 GeoAware Multi-Hazard Prediction
       </h1>
 
-      <div className="flex gap-3 justify-center mb-6">
+      <div style={{ display: "flex", gap: "12px", justifyContent: "center", marginBottom: "24px", flexWrap: "wrap" }}>
         {tabButton("cyclone", "Cyclone")}
         {tabButton("earthquake", "Earthquake")}
         {tabButton("flood", "Flood")}
@@ -150,15 +197,21 @@ export default function MLplugin() {
         {tab === "cyclone" && (
           <section
             aria-labelledby="cyclone-heading"
-            className="bg-white shadow-sm rounded-lg p-6"
+            style={{
+              backgroundColor: darkMode ? "#202020" : "#ffffff",
+              color: darkMode ? "#ededed" : "#000000",
+              borderRadius: "8px",
+              padding: "24px",
+              boxShadow: darkMode ? "0 1px 3px rgba(0,0,0,0.3)" : "0 1px 3px rgba(0,0,0,0.1)",
+            }}
           >
-            <h2 id="cyclone-heading" className="text-lg font-medium mb-4">
+            <h2 id="cyclone-heading" style={{ fontSize: "18px", fontWeight: "500", marginBottom: "16px", color: darkMode ? "#ededed" : "#000000" }}>
               Cyclone Prediction
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "16px" }}>
               {Object.keys(cyclone).map((k) => (
-                <label key={k} className="flex flex-col">
-                  <span className="text-sm font-medium mb-1">
+                <label key={k} style={{ display: "flex", flexDirection: "column" }}>
+                  <span style={{ fontSize: "14px", fontWeight: "500", marginBottom: "8px", color: darkMode ? "#b3b3b3" : "#374151" }}>
                     {k.replace(/_/g, " ")}
                   </span>
                   <input
@@ -168,23 +221,58 @@ export default function MLplugin() {
                     required
                     value={cyclone[k]}
                     onChange={handleChange(setCyclone)}
-                    className="p-2 border rounded-md focus:ring-2 focus:ring-indigo-200 outline-none"
+                    style={{
+                      padding: "8px",
+                      border: `1px solid ${darkMode ? "#2f2f2f" : "#d1d5db"}`,
+                      borderRadius: "6px",
+                      backgroundColor: darkMode ? "#2a2a2a" : "#ffffff",
+                      color: darkMode ? "#ededed" : "#000000",
+                      fontSize: "14px",
+                      outline: "none",
+                      transition: "all 0.2s ease",
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = "#3b82f6";
+                      e.target.style.backgroundColor = darkMode ? "#2f2f2f" : "#f9fafb";
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = darkMode ? "#2f2f2f" : "#d1d5db";
+                      e.target.style.backgroundColor = darkMode ? "#2a2a2a" : "#ffffff";
+                    }}
                   />
                 </label>
               ))}
             </div>
-            <div className="mt-4 flex gap-3">
+            <div style={{ marginTop: "16px", display: "flex", gap: "12px" }}>
               <button
                 onClick={() =>
                   submitJson("/predict/cyclone", "cyclone", cyclone)
                 }
-                className="px-4 py-2 rounded-md bg-indigo-600 text-white font-medium hover:bg-indigo-700"
+                style={{
+                  padding: "8px 16px",
+                  borderRadius: "6px",
+                  backgroundColor: "#3b82f6",
+                  color: "white",
+                  fontWeight: "500",
+                  border: "none",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
               >
                 Predict Cyclone
               </button>
               <button
                 onClick={() => setCyclone(emptyCyclone)}
-                className="px-4 py-2 rounded-md bg-gray-100"
+                style={{
+                  padding: "8px 16px",
+                  borderRadius: "6px",
+                  backgroundColor: darkMode ? "#2a2a2a" : "#f3f4f6",
+                  color: darkMode ? "#b3b3b3" : "#374151",
+                  fontWeight: "500",
+                  border: `1px solid ${darkMode ? "#2f2f2f" : "#d1d5db"}`,
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
               >
                 Reset
               </button>
@@ -197,9 +285,16 @@ export default function MLplugin() {
         {tab === "earthquake" && (
           <section
             aria-labelledby="earthquake-heading"
-            className="bg-white shadow-sm rounded-lg p-6 mt-4"
+            style={{
+              backgroundColor: darkMode ? "#202020" : "#ffffff",
+              color: darkMode ? "#ededed" : "#000000",
+              borderRadius: "8px",
+              padding: "24px",
+              boxShadow: darkMode ? "0 1px 3px rgba(0,0,0,0.3)" : "0 1px 3px rgba(0,0,0,0.1)",
+              marginTop: "16px",
+            }}
           >
-            <h2 id="earthquake-heading" className="text-lg font-medium mb-4">
+            <h2 id="earthquake-heading" style={{ fontSize: "18px", fontWeight: "500", marginBottom: "16px", color: darkMode ? "#ededed" : "#000000" }}>
               Earthquake Prediction
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -251,11 +346,11 @@ export default function MLplugin() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {Object.keys(flood).map((k) => (
                 <label key={k} className="flex flex-col">
-                  <span className="text-sm font-medium mb-1">{k}</span>
+                  <span className="text-sm font-medium mb-1">{floodLabels[k]}</span>
                   <input
                     name={k}
-                    type={k.match(/Land Cover|Soil Type/) ? "text" : "number"}
-                    step={k.match(/Land Cover|Soil Type/) ? undefined : "any"}
+                    type={k.match(/Land_Cover|Soil_Type/) ? "text" : "number"}
+                    step={k.match(/Land_Cover|Soil_Type/) ? undefined : "any"}
                     required
                     value={flood[k]}
                     onChange={handleChange(setFlood)}

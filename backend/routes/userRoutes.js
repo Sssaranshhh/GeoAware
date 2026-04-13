@@ -84,25 +84,18 @@ userRouter.post("/signin", async (req, res) => {
   });
 });
 
-userRouter.post("/addMessage", async (req, res) => {
-  const { message } = req.body;
-  const user = User.findOne({
-    id: message.userId,
-  });
-  const createdMessage = await Message.create({
-    username: user?.username,
-    content: message.content,
-    userId: message.userId,
-    receiverType: message.receiverType,
-  });
-  if (!createdMessage) {
+userRouter.get("/getMessages/:userType", async (req, res) => {
+  const {userType} = req.params;
+
+  try {
+    const fetchedMessages = await Message.find({
+      receiverType: userType
+    })
     return res.json({
-      message: "Something went wrong in message controller",
-    });
+      data: fetchedMessages,
+      success: true
+    })
+  } catch (error) {
+    console.log(error);
   }
-  return res.json({
-    success: true,
-    message: "Message Created",
-  });
 });
-userRouter.get("/message", async (req, res) => {});

@@ -3,8 +3,8 @@ import requests
 import json
 import traceback
 
-app = Flask(__name__)
-FASTAPI_URL = "http://127.0.0.1:8000"  # make sure FastAPI is running here
+app = Flask(__name__, static_folder="static", template_folder="templates")
+FASTAPI_URL = "http://127.0.0.1:8000"  # FastAPI backend URL
 
 def safe_float(val, default=0.0):
     try:

@@ -14,11 +14,25 @@ dotenv.config();
 connectDB();
 
 const app = express();
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(",").map(o => o.trim())
+  : ["http://localhost:5173", "http://localhost:5174", "http://localhost:5175"];
+
 app.use(cors({  
-    origin: "http://localhost:5173",
-    credentials: true
+    origin: (origin, callback) => {
+        // Allow requests with no origin (mobile apps, curl, UptimeRobot)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin) || allowedOrigins.includes("*")) {
+            return callback(null, true);
+        }
+        return callback(new Error("Not allowed by CORS"));
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
 }))
 app.use(express.json());
+app.get("/health", (req, res) => res.json({ status: "ok" }));
 app.use("/", userRouter);
 app.use("/predict", predictRouter);
 
@@ -44,9 +58,9 @@ wss.on("connection", (ws) => {
           type: 'authenticated',
           success: true
         }));
-    }else if(msg.type == "Message"){
+    } else if(msg.type == "Message"){
       await wsMessage(msg);
-  }
+    }
   });
 });
 

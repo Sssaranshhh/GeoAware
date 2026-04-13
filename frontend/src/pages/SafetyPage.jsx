@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 
-const SafetyPage = () => {
+const SafetyPage = ({ darkMode }) => {
   const [selectedDisaster, setSelectedDisaster] = useState("earthquake");
 
   const safetyData = {
     earthquake: {
       icon: "🌍",
       title: "Earthquake Safety",
-      color: "text-indigo-600",
+      color: darkMode ? "text-indigo-400" : "text-indigo-600",
       before: [
         "Secure heavy furniture and appliances to walls",
         "Keep emergency supplies (water, food, first aid kit)",
@@ -34,7 +34,7 @@ const SafetyPage = () => {
     flood: {
       icon: "🌊",
       title: "Flood Safety",
-      color: "text-blue-600",
+      color: darkMode ? "text-blue-400" : "text-blue-600",
       before: [
         "Know your flood risk and evacuation routes",
         "Keep emergency supplies on higher floors",
@@ -58,11 +58,10 @@ const SafetyPage = () => {
       ],
     },
 
-    // ✅ RESTORED from original code
     landslide: {
       icon: "⛰️",
       title: "Landslide Safety",
-      color: "text-amber-700",
+      color: darkMode ? "text-amber-400" : "text-amber-700",
       before: [
         "Learn about landslide warning signs in your area",
         "Plant ground cover on slopes",
@@ -89,7 +88,7 @@ const SafetyPage = () => {
     fire: {
       icon: "🔥",
       title: "Fire Safety",
-      color: "text-red-600",
+      color: darkMode ? "text-red-400" : "text-red-600",
       before: [
         "Install smoke alarms on every level",
         "Create and practice fire escape plan",
@@ -116,7 +115,7 @@ const SafetyPage = () => {
     storm: {
       icon: "⛈️",
       title: "Storm Safety",
-      color: "text-slate-700",
+      color: darkMode ? "text-slate-300" : "text-slate-700",
       before: [
         "Trim trees and secure loose outdoor items",
         "Stock emergency supplies (flashlights, batteries)",
@@ -142,15 +141,24 @@ const SafetyPage = () => {
   };
 
   const disasters = Object.keys(safetyData);
+  const textPrimary = darkMode ? "#ededed" : "#1e293b";
+  const textSecondary = darkMode ? "#b3b3b3" : "#475569";
+  const textMuted = darkMode ? "#8a8a8a" : "#64748b";
+  const cardBg = darkMode ? "#2a2a2a" : "#ffffff";
+  const cardBorder = darkMode ? "#3a3a3a" : "#e2e8f0";
+  const headerBg = darkMode
+    ? "linear-gradient(to right, #1e1e3a, #1a2535)"
+    : "linear-gradient(to right, #eef2ff, #f0f9ff)";
 
   return (
     <div className="space-y-10">
       {/* Page Title */}
       <div>
-        <h1 className="text-3xl font-bold text-slate-800">Safety Guidelines</h1>
-        <p className="text-slate-600 mt-1">
-          Essential safety tips to protect yourself and your family during
-          disasters
+        <h1 className="text-3xl font-bold" style={{ color: textPrimary }}>
+          Safety Guidelines
+        </h1>
+        <p className="mt-1" style={{ color: textMuted }}>
+          Essential safety tips to protect yourself and your family during disasters
         </p>
       </div>
 
@@ -160,15 +168,23 @@ const SafetyPage = () => {
           <button
             key={disaster}
             onClick={() => setSelectedDisaster(disaster)}
-            className={`p-5 rounded-2xl shadow-sm border-2 transition-all 
-              ${
+            className="p-5 rounded-2xl shadow-sm border-2 transition-all hover:scale-105 hover:shadow-md"
+            style={{
+              backgroundColor:
                 selectedDisaster === disaster
-                  ? "border-indigo-500 bg-indigo-50 shadow-md scale-105"
-                  : "border-slate-200 bg-white hover:border-indigo-300 hover:shadow-md hover:scale-105"
-              }`}
+                  ? darkMode ? "#2d2d5a" : "#eef2ff"
+                  : darkMode ? "#242424" : "#ffffff",
+              borderColor:
+                selectedDisaster === disaster
+                  ? darkMode ? "#6366f1" : "#6366f1"
+                  : darkMode ? "#3a3a3a" : "#e2e8f0",
+            }}
           >
             <div className="text-4xl mb-2">{safetyData[disaster].icon}</div>
-            <p className="text-sm font-semibold text-slate-700 capitalize">
+            <p
+              className="text-sm font-semibold capitalize"
+              style={{ color: textSecondary }}
+            >
               {disaster}
             </p>
           </button>
@@ -176,20 +192,22 @@ const SafetyPage = () => {
       </div>
 
       {/* Safety Card */}
-      <div className="bg-white border border-slate-200 rounded-2xl shadow-lg overflow-hidden">
+      <div
+        className="rounded-2xl border shadow-lg overflow-hidden"
+        style={{ backgroundColor: cardBg, borderColor: cardBorder }}
+      >
         {/* Header */}
-        <div className="p-6 border-b bg-gradient-to-r from-indigo-50 to-sky-50">
+        <div
+          className="p-6 border-b"
+          style={{ background: headerBg, borderColor: cardBorder }}
+        >
           <div className="flex items-center gap-4">
-            <span className="text-5xl">
-              {safetyData[selectedDisaster].icon}
-            </span>
+            <span className="text-5xl">{safetyData[selectedDisaster].icon}</span>
             <div>
-              <h2
-                className={`text-2xl font-bold ${safetyData[selectedDisaster].color}`}
-              >
+              <h2 className={`text-2xl font-bold ${safetyData[selectedDisaster].color}`}>
                 {safetyData[selectedDisaster].title}
               </h2>
-              <p className="text-slate-500">Stay safe and prepared</p>
+              <p style={{ color: textMuted }}>Stay safe and prepared</p>
             </div>
           </div>
         </div>
@@ -198,12 +216,12 @@ const SafetyPage = () => {
         <div className="p-6 space-y-10">
           {/* BEFORE */}
           <div>
-            <h3 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
+            <h3 className="text-lg font-semibold flex items-center gap-2" style={{ color: textPrimary }}>
               ⏰ Before the Disaster
             </h3>
             <ul className="mt-3 space-y-2">
               {safetyData[selectedDisaster].before.map((tip, index) => (
-                <li key={index} className="flex gap-3 text-slate-700">
+                <li key={index} className="flex gap-3" style={{ color: textSecondary }}>
                   <span className="text-green-500 font-bold">✓</span>
                   <span>{tip}</span>
                 </li>
@@ -213,13 +231,13 @@ const SafetyPage = () => {
 
           {/* DURING */}
           <div>
-            <h3 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
+            <h3 className="text-lg font-semibold flex items-center gap-2" style={{ color: textPrimary }}>
               🚨 During the Disaster
             </h3>
             <ul className="mt-3 space-y-2">
               {safetyData[selectedDisaster].during.map((tip, index) => (
-                <li key={index} className="flex gap-3 text-slate-700">
-                  <span className="text-orange-500 font-bold">!</span>
+                <li key={index} className="flex gap-3" style={{ color: textSecondary }}>
+                  <span className="text-orange-400 font-bold">!</span>
                   <span>{tip}</span>
                 </li>
               ))}
@@ -228,13 +246,13 @@ const SafetyPage = () => {
 
           {/* AFTER */}
           <div>
-            <h3 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
+            <h3 className="text-lg font-semibold flex items-center gap-2" style={{ color: textPrimary }}>
               ✅ After the Disaster
             </h3>
             <ul className="mt-3 space-y-2">
               {safetyData[selectedDisaster].after.map((tip, index) => (
-                <li key={index} className="flex gap-3 text-slate-700">
-                  <span className="text-blue-500 font-bold">→</span>
+                <li key={index} className="flex gap-3" style={{ color: textSecondary }}>
+                  <span className="text-blue-400 font-bold">→</span>
                   <span>{tip}</span>
                 </li>
               ))}
@@ -243,14 +261,20 @@ const SafetyPage = () => {
         </div>
 
         {/* Emergency Contact */}
-        <div className="bg-red-50 border-t border-red-200 p-5">
+        <div
+          className="border-t p-5"
+          style={{
+            backgroundColor: darkMode ? "#2d1515" : "#fef2f2",
+            borderColor: darkMode ? "#7f1d1d" : "#fecaca",
+          }}
+        >
           <div className="flex items-center justify-center gap-3">
             <span className="text-2xl">📞</span>
             <div className="text-center">
-              <p className="font-bold text-red-700">
+              <p className="font-bold" style={{ color: darkMode ? "#f87171" : "#b91c1c" }}>
                 Emergency Contact Numbers
               </p>
-              <p className="text-sm text-red-600">
+              <p className="text-sm" style={{ color: darkMode ? "#fca5a5" : "#dc2626" }}>
                 Police: 100 | Fire: 101 | Ambulance: 102 | Disaster: 108
               </p>
             </div>
