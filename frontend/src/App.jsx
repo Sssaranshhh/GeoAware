@@ -15,6 +15,7 @@ import AirQuality from "./components/ml-models/AirQuality";
 import FloodRouteNavigator from "./components/ml-models/FloodRouteNavigator";
 import FloodPredict from "./components/ml-models/FloodPredict";
 import MosdacPredict from "./components/ml-models/MosdacPredict";
+import SimpleFloodPredict from "./components/ml-models/SimpleFloodPredict";
 
 // Layout wrapper for authenticated pages
 import AppLayout from "./components/common/AppLayout";
@@ -207,6 +208,7 @@ const App = () => {
           <Route path="air-quality" element={<AirQuality darkMode={darkMode} />} />
           <Route path="flood-routing" element={<FloodRouteNavigator darkMode={darkMode} />} />
           <Route path="flood-prediction" element={<FloodPredict darkMode={darkMode} />} />
+          <Route path="simple-flood-prediction" element={<SimpleFloodPredict />} />
           <Route path="mosdac-prediction" element={<MosdacPredict darkMode={darkMode} />} />
           <Route path="inbox" element={<Inbox message={filteredMessage} darkMode={darkMode} />} />
 

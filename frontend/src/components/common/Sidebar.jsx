@@ -73,6 +73,12 @@ const Sidebar = ({ darkMode }) => {
       label: "Satellite Flood Risk",
       icon: "🛰️",
       roles: ["user", "responder", "admin"],
+    },
+    {
+      path: "/simple-flood-prediction",
+      label: "Simple Flood Predict",
+      icon: "💧",
+      roles: ["user", "responder", "admin"],
     }
   ];
 
