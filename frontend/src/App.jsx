@@ -8,6 +8,7 @@ import DashboardPage from "./pages/DashboardPage";
 import MapPage from "./pages/MapPage";
 import AlertPage from "./pages/AlertPage";
 import VerifyPage from "./pages/VerifyPage";
+import FieldReportPage from "./pages/FieldReportPage";
 import BroadcastPage from "./pages/BroadcastPage";
 import SafetyPage from "./pages/SafetyPage";
 import MLplugin from "./components/ml-models/ML-plugin";
@@ -217,7 +218,10 @@ const App = () => {
 
           {/* Responder-specific routes */}
           {role === "responder" && (
-            <Route path="verify" element={<VerifyPage ws={ws} darkMode={darkMode} />} />
+            <>
+              <Route path="verify" element={<VerifyPage ws={ws} darkMode={darkMode} />} />
+              <Route path="field-report" element={<FieldReportPage darkMode={darkMode} />} />
+            </>
           )}
 
           {/* Admin-specific routes */}

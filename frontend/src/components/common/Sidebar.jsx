@@ -33,6 +33,12 @@ const Sidebar = ({ darkMode }) => {
       roles: ["responder"],
     },
     {
+      path: "/field-report",
+      label: "Field Report",
+      icon: "📋",
+      roles: ["responder"],
+    },
+    {
       path: "/broadcast",
       label: "Broadcast Alert",
       icon: "📢",
