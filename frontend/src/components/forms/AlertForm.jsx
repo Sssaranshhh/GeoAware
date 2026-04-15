@@ -10,6 +10,13 @@ const AlertForm = ({ ws, darkMode }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // Check if WebSocket is connected
+    if (!ws || ws.readyState !== WebSocket.OPEN) {
+      alert("❌ Connection lost. Please wait a moment or refresh the page.");
+      return;
+    }
+
     const data = { disasterType, location, severity, message, contact };
     ws.send(JSON.stringify({
       type: "Message",
