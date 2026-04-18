@@ -8,8 +8,10 @@ import DashboardPage from "./pages/DashboardPage";
 import MapPage from "./pages/MapPage";
 import AlertPage from "./pages/AlertPage";
 import VerifyPage from "./pages/VerifyPage";
+import FieldReportPage from "./pages/FieldReportPage";
 import BroadcastPage from "./pages/BroadcastPage";
 import SafetyPage from "./pages/SafetyPage";
+import MissingPersonPage from "./pages/MissingPersonPage";
 import MLplugin from "./components/ml-models/ML-plugin";
 import AirQuality from "./components/ml-models/AirQuality";
 import FloodRouteNavigator from "./components/ml-models/FloodRouteNavigator";
@@ -211,6 +213,7 @@ const App = () => {
           <Route path="simple-flood-prediction" element={<SimpleFloodPredict />} />
           <Route path="mosdac-prediction" element={<MosdacPredict darkMode={darkMode} />} />
           <Route path="inbox" element={<Inbox message={filteredMessage} darkMode={darkMode} />} />
+          <Route path="missing" element={<MissingPersonPage darkMode={darkMode} />} />
 
           {/* User-specific routes */}
           {role === "user" && (
@@ -219,7 +222,10 @@ const App = () => {
 
           {/* Responder-specific routes */}
           {role === "responder" && (
-            <Route path="verify" element={<VerifyPage ws={ws} darkMode={darkMode} />} />
+            <>
+              <Route path="verify" element={<VerifyPage ws={ws} darkMode={darkMode} />} />
+              <Route path="field-report" element={<FieldReportPage darkMode={darkMode} />} />
+            </>
           )}
 
           {/* Admin-specific routes */}

@@ -1,6 +1,7 @@
 import React from "react";
 import { useAppContext } from "../Context/AppContext";
 import StatsCard from "../components/dashboard/StatsCard";
+import FieldReportsSummary from "../components/dashboard/FieldReportsSummary";
 
 const DashboardPage = ({ message, darkMode }) => {
   const { role, userName } = useAppContext();
@@ -97,6 +98,13 @@ const DashboardPage = ({ message, darkMode }) => {
           </div>
         </div>
       </div>
+
+      {/* Admin Specific: Field Reports Summary */}
+      {role === "admin" && (
+        <div className="mt-8">
+          <FieldReportsSummary darkMode={darkMode} />
+        </div>
+      )}
     </div>
   );
 };

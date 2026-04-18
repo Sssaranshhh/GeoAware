@@ -12,6 +12,13 @@ const BroadcastForm = ({ ws, darkMode }) => {
       alert("Type some message");
       return;
     }
+
+    // Check if WebSocket is connected
+    if (!ws || ws.readyState !== WebSocket.OPEN) {
+      alert("❌ Connection lost. Please wait a moment or refresh the page.");
+      return;
+    }
+
     const data = { message, disasterType, location };
     ws.send(JSON.stringify({
       userId,

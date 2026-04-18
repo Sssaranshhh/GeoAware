@@ -24,12 +24,24 @@ const Sidebar = ({ darkMode }) => {
       icon: "🛡️",
       roles: ["user", "responder", "admin"],
     },
+    {
+      path: "/missing",
+      label: "Missing Persons",
+      icon: "🔍",
+      roles: ["user", "responder", "admin"],
+    },
 
     { path: "/alert", label: "Report Alert", icon: "🚨", roles: ["user"] },
     {
       path: "/verify",
       label: "Verify Reports",
       icon: "✅",
+      roles: ["responder"],
+    },
+    {
+      path: "/field-report",
+      label: "Field Report",
+      icon: "📋",
       roles: ["responder"],
     },
     {
