@@ -6,6 +6,7 @@ import cors from "cors"
 import { userRouter } from "./routes/userRoutes.js";
 import { predictRouter } from "./routes/predictRoutes.js";
 import { fieldReportRouter } from "./routes/fieldReportRoutes.js";
+import { missingPersonRouter } from "./routes/missingPersonRoutes.js";
 import http from "http"
 import { wsMessage } from "./ws/wsMessage.js";
 
@@ -37,6 +38,7 @@ app.get("/health", (req, res) => res.json({ status: "ok" }));
 app.use("/", userRouter);
 app.use("/predict", predictRouter);
 app.use("/field-reports", fieldReportRouter);
+app.use("/missing-persons", missingPersonRouter);
 
 const server = http.createServer(app);
 

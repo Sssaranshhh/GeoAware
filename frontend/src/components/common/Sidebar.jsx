@@ -24,6 +24,12 @@ const Sidebar = ({ darkMode }) => {
       icon: "🛡️",
       roles: ["user", "responder", "admin"],
     },
+    {
+      path: "/missing",
+      label: "Missing Persons",
+      icon: "🔍",
+      roles: ["user", "responder", "admin"],
+    },
 
     { path: "/alert", label: "Report Alert", icon: "🚨", roles: ["user"] },
     {
