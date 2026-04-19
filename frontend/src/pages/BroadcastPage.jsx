@@ -1,7 +1,7 @@
 import React from "react";
 import BroadcastForm from "../components/forms/BroadcastForm";
 
-const BroadcastPage = ({ ws, darkMode }) => {
+const BroadcastPage = ({ ws, message, darkMode }) => {
   return (
     <div className="space-y-6">
       <div>
@@ -19,7 +19,7 @@ const BroadcastPage = ({ ws, darkMode }) => {
         </p>
       </div>
 
-      <BroadcastForm ws={ws} darkMode={darkMode} />
+      <BroadcastForm ws={ws} message={message} darkMode={darkMode} />
     </div>
   );
 };

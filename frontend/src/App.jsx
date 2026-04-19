@@ -27,6 +27,7 @@ const App = () => {
   const { isLoggedIn, role, loading, userId, mapRoleToUserType } = useAppContext();
   const [ws, setWs] = useState(null);
   const [message, setMessage] = useState(null);
+  const [selectedAlert, setSelectedAlert] = useState(null);
   const userType = mapRoleToUserType(role);
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem("darkMode");
@@ -212,7 +213,7 @@ const App = () => {
           <Route path="flood-prediction" element={<FloodPredict darkMode={darkMode} />} />
           <Route path="simple-flood-prediction" element={<SimpleFloodPredict />} />
           <Route path="mosdac-prediction" element={<MosdacPredict darkMode={darkMode} />} />
-          <Route path="inbox" element={<Inbox message={filteredMessage} darkMode={darkMode} />} />
+          <Route path="inbox" element={<Inbox message={filteredMessage} darkMode={darkMode} onSelectMessage={setSelectedAlert} selectedAlert={selectedAlert} />} />
           <Route path="missing" element={<MissingPersonPage darkMode={darkMode} />} />
 
           {/* User-specific routes */}
@@ -223,14 +224,14 @@ const App = () => {
           {/* Responder-specific routes */}
           {role === "responder" && (
             <>
-              <Route path="verify" element={<VerifyPage ws={ws} darkMode={darkMode} />} />
+              <Route path="verify" element={<VerifyPage ws={ws} message={selectedAlert || filteredMessage} darkMode={darkMode} />} />
               <Route path="field-report" element={<FieldReportPage darkMode={darkMode} />} />
             </>
           )}
 
           {/* Admin-specific routes */}
           {role === "admin" && (
-            <Route path="broadcast" element={<BroadcastPage ws={ws} darkMode={darkMode} />} />
+            <Route path="broadcast" element={<BroadcastPage ws={ws} message={selectedAlert || filteredMessage} darkMode={darkMode} />} />
           )}
 
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
