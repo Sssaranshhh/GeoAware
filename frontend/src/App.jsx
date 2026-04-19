@@ -12,9 +12,12 @@ import FieldReportPage from "./pages/FieldReportPage";
 import BroadcastPage from "./pages/BroadcastPage";
 import SafetyPage from "./pages/SafetyPage";
 import MissingPersonPage from "./pages/MissingPersonPage";
+import MLplugin from "./components/ml-models/ML-plugin";
 import AirQuality from "./components/ml-models/AirQuality";
 import FloodRouteNavigator from "./components/ml-models/FloodRouteNavigator";
 import FloodPredict from "./components/ml-models/FloodPredict";
+import MosdacPredict from "./components/ml-models/MosdacPredict";
+import SimpleFloodPredict from "./components/ml-models/SimpleFloodPredict";
 
 // Layout wrapper for authenticated pages
 import AppLayout from "./components/common/AppLayout";
@@ -24,6 +27,7 @@ const App = () => {
   const { isLoggedIn, role, loading, userId, mapRoleToUserType } = useAppContext();
   const [ws, setWs] = useState(null);
   const [message, setMessage] = useState(null);
+  const [selectedAlert, setSelectedAlert] = useState(null);
   const userType = mapRoleToUserType(role);
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem("darkMode");
@@ -203,10 +207,13 @@ const App = () => {
           <Route path="dashboard" element={<DashboardPage darkMode={darkMode} message={filteredMessage} />} />
           <Route path="map" element={<MapPage darkMode={darkMode} />} />
           <Route path="safety" element={<SafetyPage darkMode={darkMode} />} />
+          <Route path="predict" element={<MLplugin darkMode={darkMode} />} />
           <Route path="air-quality" element={<AirQuality darkMode={darkMode} />} />
           <Route path="flood-routing" element={<FloodRouteNavigator darkMode={darkMode} />} />
           <Route path="flood-prediction" element={<FloodPredict darkMode={darkMode} />} />
-          <Route path="inbox" element={<Inbox message={filteredMessage} darkMode={darkMode} />} />
+          <Route path="simple-flood-prediction" element={<SimpleFloodPredict />} />
+          <Route path="mosdac-prediction" element={<MosdacPredict darkMode={darkMode} />} />
+          <Route path="inbox" element={<Inbox message={filteredMessage} darkMode={darkMode} onSelectMessage={setSelectedAlert} selectedAlert={selectedAlert} />} />
           <Route path="missing" element={<MissingPersonPage darkMode={darkMode} />} />
 
           {/* User-specific routes */}
@@ -217,14 +224,14 @@ const App = () => {
           {/* Responder-specific routes */}
           {role === "responder" && (
             <>
-              <Route path="verify" element={<VerifyPage ws={ws} darkMode={darkMode} />} />
+              <Route path="verify" element={<VerifyPage ws={ws} message={selectedAlert || filteredMessage} darkMode={darkMode} />} />
               <Route path="field-report" element={<FieldReportPage darkMode={darkMode} />} />
             </>
           )}
 
           {/* Admin-specific routes */}
           {role === "admin" && (
-            <Route path="broadcast" element={<BroadcastPage ws={ws} darkMode={darkMode} />} />
+            <Route path="broadcast" element={<BroadcastPage ws={ws} message={selectedAlert || filteredMessage} darkMode={darkMode} />} />
           )}
 
           <Route path="*" element={<Navigate to="/dashboard" replace />} />

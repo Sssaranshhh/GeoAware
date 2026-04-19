@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import User from "../models/UserModel.js";
 import jwt from "jsonwebtoken";
 import Message from "../models/MessageModel.js";
+import upload from "../middlewares/uploadMiddleware.js";
 
 export const userRouter = Router();
 
@@ -84,18 +85,42 @@ userRouter.post("/signin", async (req, res) => {
   });
 });
 
+userRouter.post("/alert-photo", upload.single("photo"), async (req, res) => {
+  try {
+    const photoUrl = req.file?.path || req.file?.secure_url || null;
+    return res.status(200).json({
+      success: true,
+      photoUrl,
+    });
+  } catch (error) {
+    console.error("Alert photo upload failed:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Photo upload failed",
+      error: error.message,
+    });
+  }
+});
+
 userRouter.get("/getMessages/:userType", async (req, res) => {
-  const {userType} = req.params;
+  const { userType } = req.params;
 
   try {
     const fetchedMessages = await Message.find({
-      receiverType: userType
+      receiverType: userType,
     })
+      .sort({ createdAt: -1 });
+
     return res.json({
       data: fetchedMessages,
-      success: true
-    })
+      success: true,
+    });
   } catch (error) {
-    console.log(error);
+    console.error("Error fetching messages:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch messages",
+      error: error.message,
+    });
   }
 });

@@ -60,6 +60,7 @@ const SignupForm = ({ darkMode }) => {
         setError("An account with this email or username already exists.");
         toast.error("Account already exists. Try logging in instead.");
       } else {
+        console.log("Error", err)
         setError(err.message || "Signup failed. Please try again.");
         toast.error("Signup failed. Please try again.");
       }
