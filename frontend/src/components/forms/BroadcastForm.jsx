@@ -1,34 +1,57 @@
 import React, { useState } from "react";
 
-const BroadcastForm = ({ ws, darkMode }) => {
-  const [message, setMessage] = useState("");
-  const [disasterType, setDisasterType] = useState("");
-  const [location, setLocation] = useState("");
+const BroadcastForm = ({ ws, message: incomingMessage, darkMode }) => {
+  const [broadcastNote, setBroadcastNote] = useState("");
   const userId = localStorage.getItem("userId");
+
+  const messageContent = incomingMessage?.content
+    ? typeof incomingMessage.content === "object"
+      ? incomingMessage.content
+      : { message: incomingMessage.content }
+    : {};
+
+  const hasMessage = Object.keys(messageContent).length > 0;
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (message === "") {
-      alert("Type some message");
-      return;
-    }
 
-    // Check if WebSocket is connected
     if (!ws || ws.readyState !== WebSocket.OPEN) {
       alert("❌ Connection lost. Please wait a moment or refresh the page.");
       return;
     }
 
-    const data = { message, disasterType, location };
+    if (!hasMessage) {
+      alert("Select an alert from inbox to broadcast");
+      return;
+    }
+
+    const contentToSend = {
+      ...messageContent,
+      adminBroadcastNote: broadcastNote,
+    };
+
     ws.send(JSON.stringify({
       userId,
       type: "Message",
       userType: "Admin",
-      content: data,
+      content: contentToSend,
       receiverType: "User",
       read: false,
     }));
     alert("Broadcasted Successfully ✅");
+    setBroadcastNote("");
+  };
+
+  const renderDetailItem = (label, value) => {
+    if (!value) return null;
+    return (
+      <div className="text-sm mb-1">
+        <span className="font-semibold" style={{ color: darkMode ? "#e2e8f0" : "#1f2937" }}>
+          {label}:
+        </span>{" "}
+        <span style={{ color: darkMode ? "#cbd5e1" : "#4b5563" }}>{value}</span>
+      </div>
+    );
   };
 
   const cardBg = darkMode ? "#242424" : "#ffffff";
@@ -52,59 +75,45 @@ const BroadcastForm = ({ ws, darkMode }) => {
       style={{ backgroundColor: cardBg, border: `1px solid ${cardBorder}` }}
     >
       <div className="space-y-5">
-        {/* Alert Type */}
         <div>
-          <label className="block font-semibold mb-2" style={{ color: labelColor }}>
-            Alert Type
-          </label>
-          <select
-            required
-            style={inputStyle}
-            onChange={(e) => setDisasterType(e.target.value)}
-          >
-            <option value="">Select alert type...</option>
-            <option value="landslide">Landslide Warning</option>
-            <option value="flood">Flood Warning</option>
-            <option value="earthquake">Earthquake Alert</option>
-            <option value="fire">Fire Warning</option>
-            <option value="storm">Storm Warning</option>
-            <option value="evacuation">Evacuation Order</option>
-            <option value="all-clear">All Clear</option>
-          </select>
+          <h3 className="text-lg font-semibold" style={{ color: darkMode ? "#f8fafc" : "#111827" }}>
+            Verified Alert to Broadcast
+          </h3>
+          {!hasMessage ? (
+            <p className="text-sm mt-2" style={{ color: darkMode ? "#94a3b8" : "#475569" }}>
+              Select an official-verified alert from the inbox to broadcast full details to users.
+            </p>
+          ) : (
+            <div className="mt-3">
+              {renderDetailItem("Disaster", messageContent.disasterType)}
+              {renderDetailItem("Severity", messageContent.severity)}
+              {renderDetailItem("Location", messageContent.location)}
+              {renderDetailItem("Contact", messageContent.contact)}
+              {renderDetailItem("Message", messageContent.message)}
+              {renderDetailItem("Photo", messageContent.photoUrl ? "Attached" : "None")}
+              {messageContent.officialNote && renderDetailItem("Official Notes", messageContent.officialNote)}
+            </div>
+          )}
         </div>
 
-        {/* Affected Region */}
         <div>
           <label className="block font-semibold mb-2" style={{ color: labelColor }}>
-            Affected Region
-          </label>
-          <input
-            type="text"
-            required
-            placeholder="e.g., Shimla District, Sector 1-5"
-            style={inputStyle}
-            onChange={(e) => setLocation(e.target.value)}
-          />
-        </div>
-
-        {/* Alert Message */}
-        <div>
-          <label className="block font-semibold mb-2" style={{ color: labelColor }}>
-            Alert Message
+            Additional Broadcast Notes (Optional)
           </label>
           <textarea
-            required
             rows="4"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="Provide detailed information about the emergency and recommended actions..."
-            style={{ ...inputStyle, resize: "none" }}
+            value={broadcastNote}
+            onChange={(e) => setBroadcastNote(e.target.value)}
+            placeholder={hasMessage ? "Add any additional context or instructions for users..." : "Waiting for a report to arrive..."}
+            style={{ ...inputStyle, resize: "vertical" }}
+            disabled={!hasMessage}
           />
         </div>
 
         <button
           type="submit"
-          className="w-full p-3 bg-gradient-to-br from-blue-500 to-purple-700 text-white rounded-lg font-semibold hover:scale-105 transition transform"
+          disabled={!hasMessage}
+          className="w-full p-3 bg-gradient-to-br from-blue-500 to-purple-700 text-white rounded-lg font-semibold hover:scale-105 transition transform disabled:opacity-50 disabled:cursor-not-allowed"
         >
           📢 Send Broadcast Alert
         </button>

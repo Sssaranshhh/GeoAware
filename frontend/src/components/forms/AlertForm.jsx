@@ -6,18 +6,43 @@ const AlertForm = ({ ws, darkMode }) => {
   const [disasterType, setDisasterType] = useState(null);
   const [contact, setContact] = useState(null);
   const [message, setMessage] = useState("");
+  const [photoFile, setPhotoFile] = useState(null);
   const userId = localStorage.getItem("userId");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Check if WebSocket is connected
+
     if (!ws || ws.readyState !== WebSocket.OPEN) {
       alert("❌ Connection lost. Please wait a moment or refresh the page.");
       return;
     }
 
-    const data = { disasterType, location, severity, message, contact };
+    let photoUrl = null;
+
+    if (photoFile) {
+      try {
+        const formData = new FormData();
+        formData.append("photo", photoFile);
+
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/alert-photo`, {
+          method: "POST",
+          body: formData,
+        });
+
+        const result = await res.json();
+        if (!res.ok || !result.success) {
+          throw new Error(result.message || "Image upload failed");
+        }
+
+        photoUrl = result.photoUrl;
+      } catch (error) {
+        console.error("Photo upload error:", error);
+        alert("❌ Photo upload failed. Please try again.");
+        return;
+      }
+    }
+
+    const data = { disasterType, location, severity, message, contact, photoUrl };
     ws.send(JSON.stringify({
       type: "Message",
       userType: "User",
@@ -27,6 +52,7 @@ const AlertForm = ({ ws, darkMode }) => {
       read: false,
     }));
     alert("Alert sent to officials ✅");
+    setPhotoFile(null);
   };
 
   const severityLevels = [
@@ -134,6 +160,24 @@ const AlertForm = ({ ws, darkMode }) => {
             placeholder="Describe what you're witnessing in detail..."
             style={{ ...inputStyle, resize: "none" }}
           />
+        </div>
+
+        {/* Photo Evidence */}
+        <div>
+          <label className="block font-semibold mb-2" style={{ color: labelColor }}>
+            Photo Evidence (Optional)
+          </label>
+          <input
+            type="file"
+            accept="image/*"
+            style={{ ...inputStyle, padding: "10px 12px" }}
+            onChange={(e) => setPhotoFile(e.target.files?.[0] ?? null)}
+          />
+          {photoFile && (
+            <p className="text-sm mt-2" style={{ color: hintColor }}>
+              Selected file: {photoFile.name}
+            </p>
+          )}
         </div>
 
         {/* Contact */}
