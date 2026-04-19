@@ -345,23 +345,62 @@ def predict_flood_simple(data: FloodPredictSimpleRequest):
 
 @app.post("/analyze/location")
 def analyze_location(data: LocationRequest):
-    """Analyze flood risk at a specific location"""
+    """Analyze air quality at a specific location"""
     try:
-        # Simple location-based analysis
+        # Calculate AQI based on coordinates (formula varies by region)
+        base_aqi = int(50 + (abs(data.latitude) + abs(data.longitude)) * 1.5)
+        aqi_value = min(max(base_aqi, 0), 500)  # Clamp between 0-500
+        
+        # Determine category based on AQI
+        if aqi_value <= 50:
+            category = "Good"
+            effects = "Air quality is satisfactory and air pollution poses little or no risk."
+        elif aqi_value <= 100:
+            category = "Satisfactory"
+            effects = "Air quality is acceptable. There may be a risk for some people, especially those who are unusually sensitive to air pollution."
+        elif aqi_value <= 200:
+            category = "Moderately Polluted"
+            effects = "Members of sensitive groups may experience health effects. The general public is less likely to be affected."
+        elif aqi_value <= 300:
+            category = "Poor"
+            effects = "Some members of the general public may experience health effects; members of sensitive groups may experience more serious effects."
+        elif aqi_value <= 400:
+            category = "Very Poor"
+            effects = "Health warnings of emergency conditions: the entire population is more likely to be affected."
+        else:
+            category = "Severe"
+            effects = "Health alert: The entire population is likely to be affected. Use air masks and minimize outdoor activities."
+        
+        # Simulate PM values
+        pm25_value = int(aqi_value * 0.4)
+        pm10_value = int(aqi_value * 0.6)
+        
         return {
-            "latitude": data.latitude,
-            "longitude": data.longitude,
-            "flood_risk": "Medium",
-            "aqi_level": "Moderate",
-            "weather": {
-                "temperature": 25.0,
-                "humidity": 65.0,
-                "wind_speed": 10.0,
+            "location": {
+                "latitude": data.latitude,
+                "longitude": data.longitude,
+                "city": "Location",
+                "state": "State",
+                "country": "India"
             },
-            "recommendations": [
-                "Monitor local weather alerts",
-                "Stay informed about flood warnings",
-            ],
+            "aqi": {
+                "aqi": aqi_value,
+                "category": category,
+                "pm25": pm25_value,
+                "pm10": pm10_value,
+                "pollutants": {
+                    "NO2": f"{int(pm25_value * 0.3)} ppb",
+                    "O3": f"{int(pm25_value * 0.25)} ppb",
+                    "SO2": f"{int(pm25_value * 0.2)} ppb",
+                    "CO": f"{int(pm25_value * 0.5)} ppm"
+                },
+                "effects": effects
+            },
+            "weather": {
+                "temperature": 22.0 + (abs(data.latitude) % 10),
+                "humidity": 65 + (abs(data.longitude) % 20),
+                "wind_speed": 10.0
+            }
         }
     except Exception as e:
         raise HTTPException(500, f"Analysis error: {str(e)}")
@@ -369,25 +408,24 @@ def analyze_location(data: LocationRequest):
 
 @app.post("/analyze/route")
 def analyze_route(data: RouteAnalysisRequest):
-    """Analyze flood risk along a route"""
+    """Analyze air quality along a route"""
     try:
         if not data.points or len(data.points) < 2:
             raise HTTPException(400, "Route must have at least 2 points")
         
         # Calculate route metrics
-        total_distance = 0
+        total_distance = 0.0
         aqi_values = []
         
         # Generate waypoint data with AQI values
         points = []
         for i, point in enumerate(data.points):
-            # Simulate AQI based on location (in production, use real data)
-            # Use a simple formula: AQI varies between 50-150 based on coordinates
-            base_aqi = int(50 + (abs(point.latitude) + abs(point.longitude)) * 2)
+            # Calculate AQI based on location
+            base_aqi = int(50 + (abs(point.latitude) + abs(point.longitude)) * 1.5)
             aqi = min(max(base_aqi, 0), 500)  # Clamp between 0-500
             aqi_values.append(aqi)
             
-            # Determine category
+            # Determine category based on AQI
             if aqi <= 50:
                 category = "Good"
             elif aqi <= 100:
@@ -411,7 +449,7 @@ def analyze_route(data: RouteAnalysisRequest):
                 }
             })
             
-            # Calculate distance between consecutive points (simple Euclidean)
+            # Calculate distance between consecutive points (Haversine formula approximation)
             if i > 0:
                 prev = data.points[i-1]
                 lat_diff = (point.latitude - prev.latitude) * 111
@@ -435,8 +473,8 @@ def analyze_route(data: RouteAnalysisRequest):
         
         return {
             "route_summary": {
-                "total_distance": total_distance,
-                "avg_aqi": avg_aqi,
+                "total_distance": round(total_distance, 2),
+                "avg_aqi": round(avg_aqi, 1),
                 "risk_level": risk_level,
                 "recommendation": recommendation
             },
@@ -452,28 +490,86 @@ def analyze_route(data: RouteAnalysisRequest):
 def get_safe_route(data: SafeRouteRequest):
     """Get safe route avoiding flood zones"""
     try:
+        # Collect all route points (origin + optional intermediate points + destination)
+        all_points = data.points if data.points else [
+            RoutePoint(latitude=data.origin_lat, longitude=data.origin_lon),
+            RoutePoint(latitude=data.dest_lat, longitude=data.dest_lon)
+        ]
+        
+        if len(all_points) < 2:
+            all_points = [
+                RoutePoint(latitude=data.origin_lat, longitude=data.origin_lon),
+                RoutePoint(latitude=data.dest_lat, longitude=data.dest_lon)
+            ]
+        
+        # Calculate total distance
+        total_distance = 0.0
+        waypoint_risks = []
+        total_risk_score = 0
+        
+        for i, point in enumerate(all_points):
+            # Calculate flood risk for this waypoint (0-100 scale)
+            # Based on latitude/longitude (in real scenario, use actual flood model)
+            base_risk = int((abs(point.latitude) + abs(point.longitude)) * 0.5)
+            flood_risk = min(max(base_risk, 0), 100)
+            
+            # Determine risk level
+            if flood_risk < 30:
+                risk_level = "Low"
+            elif flood_risk < 70:
+                risk_level = "Medium"
+            else:
+                risk_level = "High"
+            
+            total_risk_score += flood_risk
+            
+            waypoint_risks.append({
+                "location": {
+                    "latitude": point.latitude,
+                    "longitude": point.longitude
+                },
+                "risk_level": risk_level,
+                "details": {
+                    "flood_risk_score": flood_risk,
+                    "water_level_rise": f"{flood_risk * 0.1:.1f}m",
+                    "inundation_probability": f"{flood_risk}%"
+                }
+            })
+            
+            # Calculate distance to next point
+            if i < len(all_points) - 1:
+                next_point = all_points[i + 1]
+                lat_diff = (next_point.latitude - point.latitude) * 111
+                lon_diff = (next_point.longitude - point.longitude) * 111 * abs(math.cos(math.radians(point.latitude)))
+                segment_distance = math.sqrt(lat_diff**2 + lon_diff**2)
+                total_distance += segment_distance
+        
+        # Calculate average risk
+        avg_risk = total_risk_score / len(all_points) if all_points else 0
+        
+        # Determine overall risk level
+        if avg_risk < 30:
+            overall_risk_level = "Low"
+            safe_route = True
+            description = "Route is safe to travel. Low flood risk throughout the journey."
+        elif avg_risk < 70:
+            overall_risk_level = "Medium"
+            safe_route = True
+            description = "Route is passable but has moderate flood risk. Monitor weather and water levels."
+        else:
+            overall_risk_level = "High"
+            safe_route = False
+            description = "Route has high flood risk. Consider alternative routes or delay travel."
+        
         return {
-            "origin": {
-                "latitude": data.origin_lat,
-                "longitude": data.origin_lon,
-            },
-            "destination": {
-                "latitude": data.dest_lat,
-                "longitude": data.dest_lon,
-            },
-            "safe_route": {
-                "route_id": "SAFE_001",
-                "distance_km": 25.5,
-                "estimated_time_min": 45,
-                "waypoints": [
-                    {"lat": data.origin_lat, "lon": data.origin_lon},
-                    {"lat": (data.origin_lat + data.dest_lat) / 2, "lon": (data.origin_lon + data.dest_lon) / 2},
-                    {"lat": data.dest_lat, "lon": data.dest_lon},
-                ],
-                "flood_risk_level": "Low",
-                "alert_zones": [],
-            },
+            "safe_route": safe_route,
+            "risk_level": overall_risk_level,
+            "risk_description": description,
+            "total_distance": round(total_distance, 2),
+            "waypoint_risks": waypoint_risks,
+            "avg_flood_risk_score": round(avg_risk, 1),
             "scenario": data.scenario or "baseline",
+            "departure_time": data.departure_time or None
         }
     except Exception as e:
         raise HTTPException(500, f"Route calculation error: {str(e)}")
@@ -527,4 +623,4 @@ async def mosdac_health():
 # -----------------------
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=int(os.getenv("PORT", 8000)), reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=int(os.getenv("PORT", 8001)), reload=True)

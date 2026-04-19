@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-export default function FloodRouteNavigator() {
+export default function FloodRouteNavigator({ darkMode = false }) {
   const API_BASE = import.meta.env.VITE_ML_URL;
   // Check your Swagger docs at /docs and update this if different
 

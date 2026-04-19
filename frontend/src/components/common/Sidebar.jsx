@@ -57,12 +57,6 @@ const Sidebar = ({ darkMode }) => {
       roles: ["user", "responder", "admin"],
     },
     {
-      path: "/predict",
-      label: "Disaster Prediction",
-      icon: "🗓️",
-      roles: ["user", "responder", "admin"],
-    },
-    {
       path: "/air-quality",
       label: "Air Quality",
       icon: "😷",
@@ -78,18 +72,6 @@ const Sidebar = ({ darkMode }) => {
       path: "/flood-prediction",
       label: "Flood Prediction",
       icon: "🌊",
-      roles: ["user", "responder", "admin"],
-    },
-    {
-      path: "/mosdac-prediction",
-      label: "Satellite Flood Risk",
-      icon: "🛰️",
-      roles: ["user", "responder", "admin"],
-    },
-    {
-      path: "/simple-flood-prediction",
-      label: "Simple Flood Predict",
-      icon: "💧",
       roles: ["user", "responder", "admin"],
     }
   ];

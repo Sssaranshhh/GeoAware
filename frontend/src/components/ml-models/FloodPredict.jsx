@@ -1,5 +1,25 @@
+/**
+ * FloodPredict Component - Wris Flood Model Integration
+ * 
+ * This component displays real-time flood risk predictions for 85 Indian districts
+ * using the Wris Flood Model FastAPI service.
+ * 
+ * Key features:
+ * - Interactive Leaflet map showing district locations with color-coded risk levels
+ * - Real-time predictions from Wris API: http://localhost:8000/predict
+ * - Auto-refresh predictions every 30 seconds for selected district
+ * - Transparency layers: data quality, raw ML output, validation details, and AI insights
+ * - Shows error state if API is unavailable (no mock data fallback)
+ * 
+ * Request structure: { latitude, longitude, date, stateName, districtName }
+ * Response structure: { risk_level, confidence, risk_score, raw_data, data_quality, ai_insights, ... }
+ * 
+ * Environment variables:
+ * - VITE_WRIS_URL: Wris service URL (default: http://localhost:8000)
+ */
+
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import axios from "axios";
+import { predictFloodRisk } from "../../services/wrisApi";
 import { districts } from "./districts";
 import {
   CloudRain,
@@ -26,6 +46,14 @@ export default function FloodPredict() {
   const [data, setData] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(0);
   const [autoRefreshCounter, setAutoRefreshCounter] = useState(0);
+  const [apiError, setApiError] = useState(false);
+
+  // Clear all cached data on component mount to ensure fresh data
+  useEffect(() => {
+    setData(null);
+    setApiError(false);
+    sessionStorage.clear();
+  }, []);
 
   // Auto refresh timer
   useEffect(() => {
@@ -71,7 +99,11 @@ export default function FloodPredict() {
   }, []);
 
   const fetchPrediction = async (district, date, isAuto = false) => {
-    if (!isAuto) setLoading(true);
+    if (!isAuto) {
+      setLoading(true);
+      setData(null); // Clear previous data to avoid showing stale mock data
+      setApiError(false);
+    }
     
     // Pulse animation logic
     if (markersRef.current[district.id]) {
@@ -82,70 +114,30 @@ export default function FloodPredict() {
       }, 1000);
     }
 
-    const payload = {
-      date: date,
-      districtName: district.name,
-      latitude: district.lat,
-      longitude: district.lng,
-      stateName: district.state || "Unknown",
-    };
-
     try {
-      // Trying the actual API
-      const res = await axios.post("http://localhost:8000/api/v1/predict", payload, { timeout: 4000 });
-      setData(res.data);
-      updateMarkerColor(district.id, res.data.risk_level);
+      // Connecting to Wris Flood Model API via service
+      console.log(`[FloodPredict] Fetching prediction for ${district.name}, ${district.state}`);
+      const response = await predictFloodRisk({
+        latitude: district.lat,
+        longitude: district.lng,
+        date: date,
+        stateName: district.state || "Unknown",
+        districtName: district.name,
+      });
+      console.log(`[FloodPredict] API Response for ${district.name}:`, response);
+      setData(response);
+      setApiError(false);
+      updateMarkerColor(district.id, response.risk_level);
     } catch (err) {
-      console.warn("API failed, using mock data:", err.message);
-      // Fallback mock data exactly matching the screenshot
-      const mockRisk = Math.random() > 0.6 ? "High" : Math.random() > 0.3 ? "Moderate" : "Low";
-      const mockScore = mockRisk === "High" ? 0.872 : mockRisk === "Moderate" ? 0.65 : 0.23;
-      
-      const mockResult = {
-        risk_level: mockRisk,
-        confidence: 0.744,
-        risk_score: mockScore,
-        class_probabilities: { High: mockRisk === "High" ? 0.744 : 0.1, Low: 0.1, Moderate: mockRisk === "Moderate" ? 0.744 : 0.256 },
-        raw_data: {
-          rainfall_mm: (Math.random() * 50 + 10).toFixed(1),
-          temperature_c: 21.5,
-          humidity_pct: 84,
-          river_discharge_m3_s: Math.floor(Math.random() * 300 + 100),
-          water_level_m: Math.floor(Math.random() * 200 + 700),
-          soil_moisture: 12,
-          atmospheric_pressure: 1007,
-          evapotranspiration: 2.35
-        },
-        data_quality: {
-          total_fields: 8,
-          realtime_count: 5,
-          fallback_count: 3,
-          completeness_pct: 62.5,
-          sources: {
-            rainfall_mm: "open-meteo",
-            soil_moisture: "climate-normal-fallback"
-          },
-          missing_fields: ["soil_moisture", "river_discharge_m3_s", "water_level_m"],
-          max_allowed_confidence: 0.744
-        },
-        ai_insights: {
-          explanation: `High risk of flooding in ${district.name} due to heavy rain, 84% humidity, high river discharge and water level; soil moisture low but will rise, and 3 of 8 fields are estimates, reducing confidence.`,
-          action_advice: "Monitor river levels continuously, issue flood warnings, prepare evacuation routes, secure property, and keep emergency supplies ready.",
-          severity_note: "Risk remains high with moderate confidence (74%) because some data are climate-normal estimates.",
-          generated_by: "groq"
-        }
-      };
-      
-      // Override with screenshot values specifically if Dhubri is clicked
-      if (district.name === "Dhubri") {
-        mockResult.risk_level = "High";
-        mockResult.ai_insights.explanation = "High risk of flooding in Dhubri due to 35 mm rain, 84% humidity, river discharge 420 m³/s and water level 890 cm; soil moisture low but will rise, and 3 of 8 fields are estimates, reducing confidence.";
-        mockResult.raw_data.rainfall_mm = 34.7;
-        mockResult.raw_data.river_discharge_m3_s = 420;
+      console.error(`[FloodPredict] API Error for ${district.name}:`, err.message);
+      setApiError(true);
+      // Only show mock data if this is auto-refresh, otherwise show error
+      if (isAuto) {
+        console.warn("Auto-refresh failed, keeping previous data");
+      } else {
+        // Show error state instead of mock data
+        setData(null);
       }
-      
-      setData(mockResult);
-      setTimeout(() => updateMarkerColor(district.id, mockResult.risk_level), 500);
     } finally {
       if (!isAuto) setLoading(false);
       setLastUpdated(0);
@@ -213,6 +205,15 @@ export default function FloodPredict() {
     }
   }, [selectedDate]);
 
+  // Force refresh - clears all data and refetches
+  const handleForceRefresh = () => {
+    setData(null);
+    setApiError(false);
+    if (selectedDistrict) {
+      fetchPrediction(selectedDistrict, selectedDate);
+    }
+  };
+
   return (
     <div className="flex h-screen w-full bg-slate-950 text-slate-100 overflow-hidden font-sans">
       <style>{`
@@ -266,6 +267,15 @@ export default function FloodPredict() {
                 className="bg-transparent border-none text-sm font-medium focus:ring-0 text-white outline-none"
               />
             </div>
+            <button
+              onClick={handleForceRefresh}
+              disabled={!selectedDistrict || loading}
+              className="bg-slate-900/80 backdrop-blur-md px-4 py-3 rounded-xl border border-white/10 shadow-lg hover:bg-slate-800/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+              title="Force refresh - clears cache and refetches data"
+            >
+              <RefreshCw size={18} className="text-emerald-400"/>
+              <span className="text-sm font-medium">Refresh</span>
+            </button>
           </div>
         </div>
 
@@ -320,6 +330,20 @@ export default function FloodPredict() {
               <div className="flex flex-col items-center justify-center py-20">
                 <RefreshCw size={36} className="text-blue-500 animate-spin mb-4" />
                 <p className="text-sm font-medium bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent animate-pulse">Fetching live data models...</p>
+                <p className="text-xs text-slate-500 mt-2 text-center">This may take up to 60 seconds as we fetch data from WRIS, Open-Meteo, and generate AI insights</p>
+              </div>
+            ) : apiError && !data ? (
+              <div className="flex flex-col items-center justify-center py-20">
+                <AlertTriangle size={36} className="text-red-500 mb-4" />
+                <p className="text-sm font-medium text-red-400 mb-2">API Connection Error</p>
+                <p className="text-xs text-slate-400 text-center">Unable to connect to Wris service. Ensure the backend is running at:</p>
+                <p className="text-xs text-slate-500 font-mono mt-1">http://localhost:8000</p>
+                <button 
+                  onClick={() => fetchPrediction(selectedDistrict, selectedDate)}
+                  className="mt-4 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs rounded-lg transition-colors"
+                >
+                  Retry
+                </button>
               </div>
             ) : data && (
               <div className="space-y-6 pb-10">
@@ -384,26 +408,38 @@ export default function FloodPredict() {
                 </div>
 
                 {/* SECTION 3: AI INSIGHTS */}
-                <div className="bg-indigo-900/20 border border-indigo-500/20 rounded-xl p-1">
-                  <div className="bg-slate-900/80 rounded-[10px] p-4 relative overflow-hidden">
-                     {/* Decorative Groq badge */}
-                     <div className="absolute top-0 right-0 bg-indigo-600 border-b border-l border-indigo-400/50 text-[9px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-bl-lg text-indigo-50">
-                        {data.ai_insights.generated_by} AI
-                     </div>
-                     
-                     <h3 className="text-sm font-bold text-indigo-300 mb-2 flex items-center gap-2">
-                        <Info size={16} /> Analysis Report
-                     </h3>
-                     <p className="text-sm text-slate-300 leading-relaxed mb-4">
-                        {data.ai_insights.explanation}
-                     </p>
-                     
-                     <div className="bg-red-500/10 border-l-2 border-red-500 rounded-r-md p-3">
-                        <p className="text-xs font-semibold text-red-400 mb-1 flex items-center gap-1.5"><AlertTriangle size={14}/> Recommendation</p>
-                        <p className="text-xs text-slate-300 leading-relaxed">{data.ai_insights.action_advice}</p>
-                     </div>
+                {data?.ai_insights ? (
+                  <div className="bg-indigo-900/20 border border-indigo-500/20 rounded-xl p-1">
+                    <div className="bg-slate-900/80 rounded-[10px] p-4 relative overflow-hidden">
+                       {/* Decorative Groq badge */}
+                       <div className="absolute top-0 right-0 bg-indigo-600 border-b border-l border-indigo-400/50 text-[9px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-bl-lg text-indigo-50">
+                          {data.ai_insights?.generated_by || "AI"} {data.ai_insights?.fallback ? "(Fallback)" : ""}
+                       </div>
+                       
+                       <h3 className="text-sm font-bold text-indigo-300 mb-2 flex items-center gap-2">
+                          <Info size={16} /> {data.ai_insights?.fallback ? "Rule-Based" : "AI-Generated"} Analysis
+                       </h3>
+                       <p className="text-sm text-slate-300 leading-relaxed mb-4">
+                          {data.ai_insights?.explanation || "Analysis unavailable"}
+                       </p>
+                       
+                       <div className="bg-red-500/10 border-l-2 border-red-500 rounded-r-md p-3">
+                          <p className="text-xs font-semibold text-red-400 mb-1 flex items-center gap-1.5"><AlertTriangle size={14}/> Recommendation</p>
+                          <p className="text-xs text-slate-300 leading-relaxed">{data.ai_insights?.action_advice || "No action advice available"}</p>
+                       </div>
+                       
+                       {data.ai_insights?.severity_note && (
+                          <div className="mt-3 p-2 bg-yellow-500/10 border-l-2 border-yellow-500 rounded-r-md">
+                             <p className="text-xs text-yellow-300">{data.ai_insights.severity_note}</p>
+                          </div>
+                       )}
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 text-center">
+                    <p className="text-xs text-slate-400">AI insights unavailable</p>
+                  </div>
+                )}
 
                 {/* SECTION 4: DATA QUALITY */}
                 <div className="flex items-center justify-between text-xs p-3 rounded-lg bg-orange-500/10 border border-orange-500/10 text-orange-200/80">

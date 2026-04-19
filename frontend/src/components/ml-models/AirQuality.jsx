@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 
-export default function AirQuality() {
+export default function AirQuality({ darkMode = false }) {
   // Backend URL (change if deployed later)
   const API = import.meta.env.VITE_ML_URL;
 
